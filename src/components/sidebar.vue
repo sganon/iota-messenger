@@ -1,17 +1,21 @@
 <template>
-  <div id="contacts" v-if="account.seed">
-    (contacts)
-  </div>
-  
-  <div v-else>
-    Insert IOTA seed to see your contacts
+  <div id="sidebar">
+    
+    <div id="contacts" v-if="account.seed">
+      (contacts)
+    </div>
+    
+    <div v-else>
+      Insert IOTA seed to see your contacts
+    </div>
+    
   </div>
 </template>
 
 <script>
 </script>
 
-<style>
+<style lang="scss">
 
 #sidebar {
   background-color: #c1c1c1;

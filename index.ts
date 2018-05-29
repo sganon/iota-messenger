@@ -1,6 +1,11 @@
 import Vue from 'vue';
 import IOTA = require('iota.lib.js');
 
+import nav from './src/components/nav.vue';
+import chat from './src/components/chat.vue';
+import chatbox from './src/components/chatbox.vue';
+import sidebar from './src/components/sidebar.vue';
+
 declare module 'vue/types/vue' {
   interface Vue {
     iota: IOTA;
@@ -22,10 +27,10 @@ const app = new Vue({
     message: {},
   },
   components: {
-    nav: undefined,
-    sidebar: undefined,
-    chat: undefined,
-    chatbox: undefined
+    'im-nav': nav,
+    'im-sidebar': sidebar,
+    'im-chat': chat,
+    'im-chatbox': chatbox
   },
   beforeCreate: function() {
 

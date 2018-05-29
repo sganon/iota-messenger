@@ -1,10 +1,11 @@
 <template>
+  <div id="chat"></div>
 </template>
 
 <script>
 </script>
 
-<style>
+<style lang="scss">
 
 #chat {
   background-color: #c8c8c8;

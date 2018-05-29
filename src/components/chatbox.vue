@@ -1,15 +1,17 @@
 <template>
-  <textarea id="message"></textarea>
-  <div id="send">
-    <button v-on:click="sendPayment()">Send Payment</button>
-    <button v-on:click="sendMessage()">Send message</button>
+  <div id="chatbox">
+    <textarea id="message"></textarea>
+    <div id="send">
+      <button v-on:click="sendPayment()">Send Payment</button>
+      <button v-on:click="sendMessage()">Send message</button>
+    </div>
   </div>
 </template>
 
 <script>
 </script>
 
-<style>
+<style lang="scss">
 
 #chatbox {
   background-color: #d8d8d8;

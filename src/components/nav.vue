@@ -1,24 +1,30 @@
 <template>
-  <div id="logo">
-    IOTA-Messenger
-  </div>
-  
-  <div id="menu">
-    <button v-if="!account.seed" v-on:click="insertSeed()">
-      Insert seed
-    </button>
-    <div v-else>{{ account.seed }}</div>
-  </div>
-  
-  <div id="iota-version">
-    iota version: {{ node.appVersion }}
+  <div id="nav">
+    <div id="logo">
+      IOTA-Messenger
+    </div>
+    
+    <div id="menu">
+      <button v-if="!account.seed" v-on:click="insertSeed()">
+        Insert seed
+      </button>
+      <div v-else>{{ account.seed }}</div>
+    </div>
+    
+    <div id="iota-version">
+      iota version: {{ node.appVersion }}
+    </div>
   </div>
 </template>
 
 <script>
+import Vue from 'vue';
+export default Vue.extend({
+  props: ['account', 'node', 'insertSeed']
+});
 </script>
 
-<style>
+<style lang="scss">
 
 #nav {
   background-color: #afafaf;
