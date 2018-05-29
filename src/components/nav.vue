@@ -8,7 +8,7 @@
       <button v-if="!store.account.seed" v-on:click="insertSeed()">
         Insert seed
       </button>
-      <div v-else>{{ store.account.seed }}</div>
+      <div v-else id="seed">{{ store.account.seed }}</div>
     </div>
     
     <div id="iota-version">

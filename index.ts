@@ -14,7 +14,7 @@ declare module 'vue/types/vue' {
       message: {
         type: string;
       };
-    }
+    };
   }
 }
 
@@ -28,16 +28,15 @@ const app = new Vue({
       node:    {},
       account: {},
       message: {},
-    }
+    },
   },
   components: {
     'im-nav':     nav,
     'im-sidebar': sidebar,
     'im-chat':    chat,
-    'im-chatbox': chatbox
+    'im-chatbox': chatbox,
   },
   created: function() {
-    
     this.store.iota = new IOTA({
       provider: 'http://nodes.iota.fm:80',
     });
@@ -49,7 +48,6 @@ const app = new Vue({
         console.log(success);
         this.store.node = success;
       }
-    });
-    
-  }
+    });  
+  },
 });
