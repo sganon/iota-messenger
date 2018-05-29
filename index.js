@@ -6,6 +6,12 @@ const app = new Vue({
     account: {},
     message: {}
   },
+  components: {
+    nav: undefined,
+    sidebar: undefined,
+    chat: undefined,
+    chatbox: undefined
+  },
   beforeCreate: function() {
     
     this.iota = new IOTA({
@@ -19,10 +25,6 @@ const app = new Vue({
         this.node = success;
       }
     });
-    
-    this.message = {
-      type: 'message'
-    }
     
   },
   methods: {

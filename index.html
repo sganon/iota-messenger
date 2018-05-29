@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
   <title>IOTA-Messenger</title>
   
@@ -8,59 +11,18 @@
   <!-- IOTA -->
   <script src="bower_components/iota.lib.js/dist/iota.js"></script>
   
-  <link rel="stylesheet" href="./index.css">
 </head>
 
 <body>
   <div id="app">
-    
-    <div id="nav">
-      
-      <div id="logo">
-        IOTA-Messenger
-      </div>
-      
-      <div id="menu">
-        <button v-if="!account.seed" v-on:click="insertSeed()">
-          Insert seed
-        </button>
-        <div v-else>{{ account.seed }}</div>
-      </div>
-      
-      <div id="iota-version">
-        iota version: {{ node.appVersion }}
-      </div>
-      
-    </div>
-    
-    <div id="sidebar">
-      
-      <div id="contacts" v-if="account.seed">
-        (contacts)
-      </div>
-      
-      <div v-else>
-        Insert IOTA seed to see your contacts
-      </div>
-      
-    </div>
-    
-    <div id="main">
-      
-      <div id="chat"></div>
-      
-    </div>
-    
-    <div id="chatbox">
-      <textarea id="message"></textarea>
-      <div id="send">
-        <button v-on:click="sendPayment()">Send Payment</button>
-        <button v-on:click="sendMessage()">Send message</button>
-      </div>
-    </div>
-    
+    <div id="nav"></div>
+    <div id="sidebar"></div>
+    <div id="chat"></div>
+    <div id="chatbox"></div>
   </div>
 </body>
 
 <!-- main -->
 <script src="./index.js"></script>
+
+</html>
