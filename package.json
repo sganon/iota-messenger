@@ -15,7 +15,9 @@
   "dependencies": {
     "@types/iota.lib.js": "^0.4.0",
     "@types/vue": "^2.0.0",
-    "iota.lib.js": "0.4",
+    "iota.lib.js": "^0.4.7",
+    "mam.client": "^0.0.1",
+    "mam.client.js": "^0.2.3",
     "node-sass": "^4.9.0",
     "vue": "^2.5.16"
   },

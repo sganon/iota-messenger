@@ -929,6 +929,14 @@ babel-plugin-transform-strict-mode@^6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
+babel-polyfill@^6.26.0:
+  version "6.26.0"
+  resolved "https://registry.yarnpkg.com/babel-polyfill/-/babel-polyfill-6.26.0.tgz#379937abc67d7895970adc621f284cd966cf2153"
+  dependencies:
+    babel-runtime "^6.26.0"
+    core-js "^2.5.0"
+    regenerator-runtime "^0.10.5"
+
 babel-preset-es2015@^6.9.0:
   version "6.24.1"
   resolved "https://registry.yarnpkg.com/babel-preset-es2015/-/babel-preset-es2015-6.24.1.tgz#d44050d6bc2c9feea702aaf38d727a0210538939"
@@ -1612,7 +1620,7 @@ combined-stream@1.0.6, combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@2.15.x, commander@^2.12.1, commander@^2.9.0, commander@~2.15.0:
+commander@2.15.x, commander@^2.11.0, commander@^2.12.1, commander@^2.9.0, commander@~2.15.0:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
@@ -3358,7 +3366,13 @@ invert-kv@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"
 
-iota.lib.js@0.4:
+"iota.crypto.js@github:iotaledger/iota.crypto.js", iota.crypto.js@iotaledger/iota.crypto.js:
+  version "0.4.2"
+  resolved "https://codeload.github.com/iotaledger/iota.crypto.js/tar.gz/05c5b4485ad8232fd5b9145e02fe988a035a7704"
+  dependencies:
+    crypto-js "^3.1.9-1"
+
+iota.lib.js@^0.4.3, iota.lib.js@^0.4.7:
   version "0.4.7"
   resolved "https://registry.yarnpkg.com/iota.lib.js/-/iota.lib.js-0.4.7.tgz#c2af1a7886b8b0e239a4b54b5caa9dd239c2d7eb"
   dependencies:
@@ -3926,7 +3940,7 @@ loader-utils@^0.2.16:
     json5 "^0.5.0"
     object-assign "^4.0.1"
 
-loader-utils@^1.0.1, loader-utils@^1.0.2, loader-utils@^1.1.0:
+loader-utils@^1.0.1, loader-utils@^1.0.2, loader-utils@^1.0.3, loader-utils@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-1.1.0.tgz#c98aef488bcceda2ffb5e2de646d6a754429f5cd"
   dependencies:
@@ -4044,6 +4058,23 @@ make-dir@^1.0.0, make-dir@^1.1.0:
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.3.0.tgz#79c1033b80515bd6d24ec9933e860ca75ee27f0c"
   dependencies:
     pify "^3.0.0"
+
+mam.client.js@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/mam.client.js/-/mam.client.js-0.2.3.tgz#bc026a087685f903ab48acd727d4234d4c135c82"
+  dependencies:
+    commander "^2.11.0"
+    iota.crypto.js iotaledger/iota.crypto.js
+
+mam.client@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/mam.client/-/mam.client-0.0.1.tgz#feadcac7b2ce40c172573710171fe968d9da6c26"
+  dependencies:
+    babel-polyfill "^6.26.0"
+    iota.crypto.js "github:iotaledger/iota.crypto.js"
+    iota.lib.js "^0.4.3"
+    pify "^3.0.0"
+    rust-wasm-loader "^0.1.2"
 
 mamacro@^0.0.3:
   version "0.0.3"
@@ -5490,6 +5521,10 @@ regenerate@^1.2.1:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/regenerate/-/regenerate-1.4.0.tgz#4a856ec4b56e4077c557589cae85e7a4c8869a11"
 
+regenerator-runtime@^0.10.5:
+  version "0.10.5"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.5.tgz#336c3efc1220adcedda2c9fab67b5a7955a33658"
+
 regenerator-runtime@^0.11.0:
   version "0.11.1"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
@@ -5722,6 +5757,13 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   resolved "https://registry.yarnpkg.com/run-queue/-/run-queue-1.0.3.tgz#e848396f057d223f24386924618e25694161ec47"
   dependencies:
     aproba "^1.1.1"
+
+rust-wasm-loader@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/rust-wasm-loader/-/rust-wasm-loader-0.1.2.tgz#995366b30195f5f079dd2f5dcbef136f13940fd7"
+  dependencies:
+    loader-utils "^1.0.3"
+    toml "^2.3.2"
 
 rxjs@^5.5.2:
   version "5.5.11"
@@ -6406,6 +6448,10 @@ to-regex@^3.0.1, to-regex@^3.0.2:
     extend-shallow "^3.0.2"
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
+
+toml@^2.3.2:
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/toml/-/toml-2.3.3.tgz#8d683d729577cb286231dfc7a8affe58d31728fb"
 
 toposort@^1.0.0:
   version "1.0.7"

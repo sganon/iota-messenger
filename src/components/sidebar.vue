@@ -1,14 +1,10 @@
 <template>
   <div id="sidebar">
-    
-    <div id="contacts" v-if="store.account.seed">
-      (contacts)
+
+    <div id="contacts">
+      {{ store.account.status }}
     </div>
-    
-    <div v-else>
-      Insert IOTA seed to see your contacts
-    </div>
-    
+
   </div>
 </template>
 
