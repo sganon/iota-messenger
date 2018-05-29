@@ -5,14 +5,14 @@
     </div>
     
     <div id="menu">
-      <button v-if="!account.seed" v-on:click="insertSeed()">
+      <button v-if="!store.account.seed" v-on:click="insertSeed()">
         Insert seed
       </button>
-      <div v-else>{{ account.seed }}</div>
+      <div v-else>{{ store.account.seed }}</div>
     </div>
     
     <div id="iota-version">
-      iota version: {{ node.appVersion }}
+      iota version: {{ store.node.appVersion }}
     </div>
   </div>
 </template>
@@ -20,7 +20,14 @@
 <script>
 import Vue from 'vue';
 export default Vue.extend({
-  props: ['account', 'node', 'insertSeed']
+  props: ['store'],
+  methods: {
+    insertSeed: function() {
+      this.store.account = {
+        seed: prompt('Please insert yout IOTA seed to log in'),
+      };
+    }
+  }
 });
 </script>
 

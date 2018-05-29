@@ -9,6 +9,24 @@
 </template>
 
 <script>
+import Vue from 'vue';
+export default Vue.extend({
+  props: ['store'],
+  methods: {
+    sendMessage: function() {
+      const msgBox = document.querySelector('#message');
+      console.log(`send message: ${msgBox.value}`);
+    },
+    sendPayment: function() {
+      const value = prompt('how much IOTA do you want to send ?');
+      if (value >= this.store.account.balance) {
+        console.log(`send ${value} IOTA`);
+      } else {
+        alert('insufficient balance');
+      }
+    }
+  }
+});
 </script>
 
 <style lang="scss">

@@ -1,7 +1,7 @@
 <template>
   <div id="sidebar">
     
-    <div id="contacts" v-if="account.seed">
+    <div id="contacts" v-if="store.account.seed">
       (contacts)
     </div>
     
@@ -13,6 +13,10 @@
 </template>
 
 <script>
+import Vue from 'vue';
+export default Vue.extend({
+  props: ['store']
+});
 </script>
 
 <style lang="scss">
