@@ -6,8 +6,12 @@
   "author": "Simon Ganon <simon@blueboard.io>",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=dev webpack-dev-server --config webpack.dev.js"    
+    "start": "NODE_ENV=dev webpack-dev-server --config webpack.dev.js",
+    "tslint": "tslint --project ./tslint.json"
   },
+  "pre-push": [
+    "tslint"
+  ],
   "dependencies": {
     "@types/iota.lib.js": "^0.4.0",
     "@types/vue": "^2.0.0",
@@ -23,6 +27,7 @@
     "sass-bulk-import-loader": "^0.1.1",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
+    "tslint": "^5.10.0",
     "typescript": "^2.8.3",
     "vue-loader": "^15.2.2",
     "vue-style-loader": "^4.1.0",
