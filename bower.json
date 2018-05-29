@@ -1,0 +1,22 @@
+{
+  "name": "iota-messenger",
+  "main": "index.js",
+  "homepage": "https://github.com/io-studio/iota-messenger",
+  "authors": [
+    "Pierre-Alexis Ciavaldini <pierre-alexis@ciavaldini.fr>"
+  ],
+  "description": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iota-generate-seed": "https://github.com/chrisdukakis/iota-generate-seed",
+    "iota.lib.js": "^0.4.7"
+  }
+}
