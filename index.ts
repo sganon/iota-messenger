@@ -1,3 +1,18 @@
+import Vue from 'vue';
+import IOTA = require('iota.lib.js');
+
+declare module 'vue/types/vue' {
+  interface Vue {
+    iota: IOTA;
+    node: any;
+    message: {
+      type: string;
+    }
+  }
+}
+
+import './assets/styles/main.scss';
+
 const app = new Vue({
   el: '#app',
   data: {
@@ -7,11 +22,11 @@ const app = new Vue({
     message: {}
   },
   beforeCreate: function() {
-    
+
     this.iota = new IOTA({
       provider: 'http://nodes.iota.fm:80'
     });
-    
+
     this.iota.api.getNodeInfo((error, success) => {
       if (error) {
         alert(error);
@@ -19,11 +34,11 @@ const app = new Vue({
         this.node = success;
       }
     });
-    
+
     this.message = {
       type: 'message'
     }
-    
+
   },
   methods: {
     insertSeed: function() {
@@ -32,8 +47,8 @@ const app = new Vue({
       }
     },
     sendMessage: function() {
-      const value = document.querySelector('#message').value;
-      console.log(`send message: ${value}`);
+      const msgBox: HTMLInputElement = document.querySelector('#message');
+      console.log(`send message: ${msgBox.value}`);
     },
     sendPayment: function() {
       const value = prompt('how much IOTA do you want to send ?');
