@@ -24,6 +24,9 @@
         <button v-if="!account.seed" v-on:click="insertSeed()">
           Insert seed
         </button>
+        <button v-if="!account.seed" v-on:click="generateSeed()">
+          Generate seed
+        </button>
         <div v-else>{{ account.seed }}</div>
       </div>
       
@@ -63,4 +66,5 @@
 </body>
 
 <!-- main -->
+<script src="./utils.js"></script>
 <script src="./index.js"></script>

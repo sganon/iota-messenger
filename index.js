@@ -3,7 +3,9 @@ const app = new Vue({
   data: {
     iota: {},
     node: {},
-    account: {},
+    account: {
+      seed: localStorage.getItem('seed') || undefined,
+    },
     message: {}
   },
   beforeCreate: function() {
@@ -31,6 +33,23 @@ const app = new Vue({
         seed: prompt('Please insert yout IOTA seed to log in')
       }
     },
+    generateSeed: function() {
+      seed = '';
+      rdmArray = new Uint32Array(1);
+      createdChars = 0;
+      while (createdChars < 81) {
+        window.crypto.getRandomValues(rdmArray);
+        rdmArray[0] = (rdmArray[0] % 33) + 57;
+        if ((rdmArray[0] >= 65 && rdmArray[0] <= 90) || rdmArray[0] == 57) {
+          seed += String.fromCharCode(rdmArray[0]);
+          createdChars += 1;
+        }
+      }
+      this.account = {
+        seed,
+      };
+      localStorage.setItem('seed', seed);
+    },
     sendMessage: function() {
       const value = document.querySelector('#message').value;
       console.log(`send message: ${value}`);
@@ -45,3 +64,4 @@ const app = new Vue({
     }
   }
 });
+
