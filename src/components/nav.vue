@@ -15,6 +15,7 @@
       </div>
       <div v-else>
         {{ store.account.seed }}
+        {{ store.account.status }}
         <button v-on:click="logout()">logout</button>
       </div>
     </div>

@@ -1,9 +1,6 @@
 import Vue from 'vue';
-
 import IOTA = require('iota.lib.js');
-import MAM  = require('mam.client.js');
-import Mam  = require('./node_modules/mam.client/lib/mam.web');
-console.log(Mam);
+import Mam = require('mam.client.js');
 
 import nav     from './src/components/nav.vue';
 import chat    from './src/components/chat.vue';
@@ -64,13 +61,12 @@ const app = new Vue({
     'store.account.seed': function(current, previous) {
       if (!!current) {
         this.store.account.status = 'initializing...';
-        console.log(Mam);
         this.store.mam.state = Mam.init(
           this.store.iota,
-          this.store.account.seed
+          this.store.account.seed,
           /* security (2) */
         );
-        console.log(this.store.mam);
+        this.store.account.status = `Found ${this.store.mam.state.channel.count} channel${this.store.account.status === 1 ? '' : 's'}`;
       }
     }
   }
