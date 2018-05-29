@@ -16,7 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "iota-generate-seed": "https://github.com/chrisdukakis/iota-generate-seed",
     "iota.lib.js": "^0.4.7"
   }
 }
