@@ -26,7 +26,9 @@ const app = new Vue({
     store: {
       iota:    {},
       node:    {},
-      account: {},
+      account: {
+        seed: localStorage.getItem('seed') || undefined
+      },
       message: {},
     }
   },
@@ -37,7 +39,7 @@ const app = new Vue({
     'im-chatbox': chatbox
   },
   created: function() {
-    
+
     this.store.iota = new IOTA({
       provider: 'http://nodes.iota.fm:80',
     });
@@ -50,6 +52,6 @@ const app = new Vue({
         this.store.node = success;
       }
     });
-    
+
   }
 });

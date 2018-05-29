@@ -3,14 +3,22 @@
     <div id="logo">
       IOTA-Messenger
     </div>
-    
+
     <div id="menu">
-      <button v-if="!store.account.seed" v-on:click="insertSeed()">
-        Insert seed
-      </button>
-      <div v-else>{{ store.account.seed }}</div>
+      <div v-if="!store.account.seed">
+        <button v-on:click="insertSeed()">
+          Insert seed
+        </button>
+        <button v-on:click="generateSeed()">
+          Generate seed
+        </button>
+      </div>
+      <div v-else>
+        {{ store.account.seed }}
+        <button v-on:click="logout()">logout</button>
+      </div>
     </div>
-    
+
     <div id="iota-version">
       iota version: {{ store.node.appVersion }}
     </div>
@@ -23,9 +31,29 @@ export default Vue.extend({
   props: ['store'],
   methods: {
     insertSeed: function() {
-      this.store.account = {
-        seed: prompt('Please insert yout IOTA seed to log in'),
-      };
+      const seed = prompt('Please insert yout IOTA seed to log in');
+      this.store.account.seed = seed;
+      localStorage.setItem('seed', seed);
+    },
+    generateSeed: function() {
+      let seed         = '';
+      let rdmArray     = new Uint32Array(1);
+      let createdChars = 0;
+
+      while (createdChars < 81) {
+        window.crypto.getRandomValues(rdmArray);
+        rdmArray[0] = (rdmArray[0] % 33) + 57;
+        if ((rdmArray[0] >= 65 && rdmArray[0] <= 90) || rdmArray[0] == 57) {
+          seed += String.fromCharCode(rdmArray[0]);
+          createdChars += 1;
+        }
+      }
+      this.store.account.seed = seed;
+      localStorage.setItem('seed', seed);
+    },
+    logout: function() {
+      this.store.account.seed = undefined;
+      localStorage.removeItem('seed');
     }
   }
 });
