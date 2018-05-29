@@ -15,6 +15,6 @@ describe('Nav.vue', () => {
             } }
         }).$mount();
         expect(vm.$el.querySelector('#iota-version').innerHTML.trim()).to.be.equal('iota version: 1.4.2');
-        expect(vm.$el.querySelector('#seed').innerHTML.trim()).to.be.equal('HOLYSEED');
+        expect(vm.$el.querySelector('#seed').innerText.trim()).to.be.equal('HOLYSEED\n      logout');
     });
 });
