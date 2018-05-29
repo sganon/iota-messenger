@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
   <title>IOTA-Messenger</title>
   
@@ -13,52 +16,10 @@
 
 <body>
   <div id="app">
-    
-    <div id="nav">
-      
-      <div id="logo">
-        IOTA-Messenger
-      </div>
-      
-      <div id="menu">
-        <button v-if="!account.seed" v-on:click="insertSeed()">
-          Insert seed
-        </button>
-        <div v-else>{{ account.seed }}</div>
-      </div>
-      
-      <div id="iota-version">
-        iota version: {{ node.appVersion }}
-      </div>
-      
-    </div>
-    
-    <div id="sidebar">
-      
-      <div id="contacts" v-if="account.seed">
-        (contacts)
-      </div>
-      
-      <div v-else>
-        Insert IOTA seed to see your contacts
-      </div>
-      
-    </div>
-    
-    <div id="main">
-      
-      <div id="chat"></div>
-      
-    </div>
-    
-    <div id="chatbox">
-      <textarea id="message"></textarea>
-      <div id="send">
-        <button v-on:click="sendPayment()">Send Payment</button>
-        <button v-on:click="sendMessage()">Send message</button>
-      </div>
-    </div>
-    
+    <im-nav :store="store"></im-nav>
+    <im-sidebar :store="store"></im-sidebar>
+    <im-chat :store="store"></im-chat>
+    <im-chatbox :store="store"></im-chatbox>
   </div>
 </body>
 
