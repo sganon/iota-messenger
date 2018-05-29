@@ -26,7 +26,9 @@ const app = new Vue({
     store: {
       iota:    {},
       node:    {},
-      account: {},
+      account: {
+        seed: localStorage.getItem('seed') || undefined,
+      },
       message: {},
     },
   },
@@ -48,6 +50,7 @@ const app = new Vue({
         console.log(success);
         this.store.node = success;
       }
-    });  
+    });
+
   },
 });
