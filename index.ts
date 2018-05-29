@@ -7,7 +7,7 @@ declare module 'vue/types/vue' {
     node: any;
     message: {
       type: string;
-    }
+    };
   }
 }
 
@@ -19,12 +19,12 @@ const app = new Vue({
     iota: {},
     node: {},
     account: {},
-    message: {}
+    message: {},
   },
   beforeCreate: function() {
 
     this.iota = new IOTA({
-      provider: 'http://nodes.iota.fm:80'
+      provider: 'http://nodes.iota.fm:80',
     });
 
     this.iota.api.getNodeInfo((error, success) => {
@@ -36,15 +36,15 @@ const app = new Vue({
     });
 
     this.message = {
-      type: 'message'
-    }
+      type: 'message',
+    };
 
   },
   methods: {
     insertSeed: function() {
       this.account = {
-        seed: prompt('Please insert yout IOTA seed to log in')
-      }
+        seed: prompt('Please insert yout IOTA seed to log in'),
+      };
     },
     sendMessage: function() {
       const msgBox: HTMLInputElement = document.querySelector('#message');
@@ -57,6 +57,6 @@ const app = new Vue({
       } else {
         alert('insufficient balance');
       }
-    }
-  }
+    },
+  },
 });
