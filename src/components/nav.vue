@@ -13,7 +13,7 @@
           Generate seed
         </button>
       </div>
-      <div v-else>
+      <div id="seed" v-else>
         {{ store.account.seed }}
         <button v-on:click="logout()">logout</button>
       </div>
