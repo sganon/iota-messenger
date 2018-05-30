@@ -2,3 +2,4 @@ bower_components
 node_modules/
 .awcache/
 yarn-error.log
+coverage/

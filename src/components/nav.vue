@@ -15,7 +15,6 @@
       </div>
       <div v-else>
         {{ store.account.seed }}
-        {{ store.account.status }}
         <button v-on:click="logout()">logout</button>
       </div>
     </div>
@@ -55,6 +54,7 @@ export default Vue.extend({
     logout: function() {
       this.store.account.seed = undefined;
       localStorage.removeItem('seed');
+      this.store.account.status = 'insert your seed or generate one (not secure)';
     }
   }
 });

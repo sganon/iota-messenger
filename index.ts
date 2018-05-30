@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import IOTA = require('iota.lib.js');
-import Mam = require('mam.client.js');
+import Mam  = require('mam.client.js');
 
 import nav     from './src/components/nav.vue';
 import chat    from './src/components/chat.vue';
@@ -30,7 +30,7 @@ const app = new Vue({
       node:    {},
       account: {
         status: 'insert your seed or generate one (not secure)',
-        seed: localStorage.getItem('seed') || undefined
+        seed: undefined
       },
       message: {},
     }
@@ -51,10 +51,15 @@ const app = new Vue({
       if (error) {
         alert(error);
       } else {
-        console.log(success);
+        console.log('node info:', success);
         this.store.node = success;
       }
     });
+
+    const seed = localStorage.getItem('seed');
+    if (seed) {
+      this.store.account.seed = seed;
+    }
 
   },
   watch: {
@@ -66,7 +71,11 @@ const app = new Vue({
           this.store.account.seed,
           /* security (2) */
         );
-        this.store.account.status = `Found ${this.store.mam.state.channel.count} channel${this.store.account.status === 1 ? '' : 's'}`;
+        console.log(this.store.mam.state);
+        const channels = this.store.mam.state.channel.count;
+        this.store.account.status = `
+          Found ${channels} channel${channels === 1 ? '' : 's'}
+        `;
       }
     }
   }
