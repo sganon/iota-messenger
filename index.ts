@@ -26,7 +26,10 @@ const app = new Vue({
   data: {
     store: {
       iota:    {},
-      mam:     {},
+      mam:     {
+        state: undefined,
+        master: 'SQJJAKMXKKCNRHTFXEPTSNHTCUOOOGBTOYODSFFLDONDDPALIJDNLIWJCTFOARL9LSMJXBJNQJLPPNBAE'
+      },
       node:    {},
       account: {
         status: 'insert your seed or generate one (not secure)',
@@ -62,8 +65,21 @@ const app = new Vue({
     }
 
   },
+  methods: {
+    publish: async function(packet) {
+      const trytes = this.store.iota.utils.toTrytes(JSON.stringify(packet));
+      const message = Mam.create(this.store.mam.state, trytes);
+      this.store.mam.state = message.state;
+      await Mam.attach(message.payload, message.address);
+      return message.root;
+    },
+    logMessage: function(message) {
+      console.log('message trytes:', message);
+      console.log(JSON.parse(this.store.iota.utils.fromTrytes(message)));
+    }
+  },
   watch: {
-    'store.account.seed': function(current, previous) {
+    'store.account.seed': async function(current, previous) {
       if (!!current) {
         this.store.account.status = 'initializing...';
         this.store.mam.state = Mam.init(
@@ -71,12 +87,20 @@ const app = new Vue({
           this.store.account.seed,
           /* security (2) */
         );
-        console.log(this.store.mam.state);
+        console.log('mam state:', this.store.mam.state);
         const channels = this.store.mam.state.channel.count;
         this.store.account.status = `
           Found ${channels} channel${channels === 1 ? '' : 's'}
         `;
+        const root1 = await this.publish('caca');
+        console.log('root1:', root1);
+        const root2 = await this.publish('test2');
+        console.log('root2:', root2);
+        Mam.fetch(root1, 'public', null, this.logMessage);
       }
+    },
+    'store.mam.state': function() {
+      console.log('mam state update:', this.store.mam.state);
     }
   }
 });
