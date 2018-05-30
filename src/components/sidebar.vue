@@ -3,6 +3,13 @@
 
     <div id="contacts">
       {{ store.account.status }}
+
+      <div v-for="(thread, index) in store.mam.history">
+        <a v-on:click="selectThread(index)" href=#>
+          channel {{ index }}
+        </a>
+      </div>
+
     </div>
 
   </div>
@@ -11,7 +18,13 @@
 <script>
 import Vue from 'vue';
 export default Vue.extend({
-  props: ['store']
+  props: ['store'],
+  methods: {
+    selectThread: function(index) {
+      console.log(index);
+      this.store.selectedThread = this.store.mam.history[index];
+    }
+  }
 });
 </script>
 
