@@ -1,11 +1,11 @@
 <template>
   <div id="chatbox">
-    <textarea id="message" :disabled="!store.selectedThread.length || store.mam.sending"></textarea>
+    <textarea id="message" :disabled="!store.selectedThread || store.mam.sending"></textarea>
     <div id="send">
       <button v-on:click="sendPayment()" disabled>
         Send Payment
       </button>
-      <button v-on:click="sendMessage()" :disabled="!store.selectedThread.length || store.mam.sending">
+      <button v-on:click="sendMessage()" :disabled="!store.selectedThread || store.mam.sending">
         Send message
       </button>
     </div>

@@ -1,6 +1,6 @@
 <template>
   <div id="chat">
-    <div v-if="store.selectedThread.length">
+    <div v-if="store.selectedThread">
       <div v-for="message in store.selectedThread">
         {{ store.iota.utils.fromTrytes(message) }}
       </div>

@@ -36,7 +36,7 @@ const app = new Vue({
         status: 'insert your seed or generate one (not secure)',
         seed: undefined
       },
-      selectedThread: []
+      selectedThread: undefined
     },
   },
   components: {
