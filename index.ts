@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import IOTA = require('iota.lib.js');
-import Mam  = require('mam.client.js');
+import Mam  = require('./node_modules/mam.client/lib/mam.client');
 
 import nav     from './src/components/nav.vue';
 import chat    from './src/components/chat.vue';

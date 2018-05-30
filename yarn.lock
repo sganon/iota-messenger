@@ -5531,7 +5531,7 @@ make-dir@^1.0.0, make-dir@^1.1.0:
   dependencies:
     pify "^3.0.0"
 
-mam.client.js@io-studio/mam.client.js:
+mam.client@io-studio/mam.client.js:
   version "0.0.2"
   resolved "https://codeload.github.com/io-studio/mam.client.js/tar.gz/26470fe0cafe302d849d237e051463cf14673bff"
   dependencies:
