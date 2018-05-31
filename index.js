@@ -13,36 +13,16 @@ import sidebar   from './src/components/sidebar.vue';
 const data = {
   store: {
     vue:          undefined,
-    status:       'insert your seed or generate one (not secure)',
     iota:         undefined,
-    messaging:    undefined,
-    channels: {
-      private:    {},
-      restricted: {},
-      public:     {}
-    },
-    current:      undefined,
+    status:       'insert your seed or generate one (not secure)',
     account: {
       seed:       undefined,
     },
+    messaging:    undefined,
+    current:      undefined,
     isSending:    false,
     reset:        undefined
   },
-}
-
-const iotaInit = function(store) {
-  return new Promise ((resolve, reject) => {
-    store.iota = new IOTA({
-      provider: 'http://nodes.iota.fm:80',
-    });
-    store.iota.api.getNodeInfo((error, info) => {
-      if (error) reject(error);
-      else {
-        console.info(info);
-        resolve(info);
-      }
-    });
-  })
 }
 
 const app = new Vue({
@@ -63,7 +43,7 @@ const app = new Vue({
     this.store.vue = this;
 
     // TODO IOTA Service
-    await iotaInit(this.store);
+    this.iota = await this.iotaInit();
 
     // TODO where to move this ?
     const seed = localStorage.getItem('seed');
@@ -73,27 +53,53 @@ const app = new Vue({
     }
 
   },
-  watch: {
-    'store.account.seed': async function(current, previous) {
-      if (!!current) {
-        console.debug('inserted new seed');
-        this.store.status = "opening account...";
-        this.store.messaging = new Messaging(this.store);
-      }
+  methods: {
+
+    iotaInit: function() {
+      return new Promise ((resolve, reject) => {
+
+        console.time('iota-init');
+        const iota = new IOTA({ provider: 'https://node.iota-tangle.io:14265' });
+        iota.api.getNodeInfo((error, info) => {
+          if (error) reject(error);
+          else {
+            console.debug(info);
+            resolve(iota);
+          }
+          console.timeEnd('iota-init');
+        });
+
+      });
     },
-    'store.channels': {
-      handler: (current) => console.log('channels', current),
-      deep: true
-    },
-    'store.channels.public': (current) => console.log('channels.public', current),
-    'store.channels.private': (current) => console.log('channels.private', current),
-    /*
-    'store.current': function (current) {
-      console.debug('changing current', current);
-      console.log(this.store.channels)
-      console.log(this.store.channels[current.mode][current.id])
-      this.store.current.messages = this.store.channels[current.mode][current.id].messages;
+    startMessaging: async function(seed) {
+      console.time('messaging-init');
+
+      const messaging = new Messaging(this.iota, seed);
+      this.store.messaging = messaging;
+
+      this.store.status   = "opening messaging account...";
+      this.store.channels = await messaging.init();
+      this.store.status   = "loading channels...";
+      this.store.channels = await messaging.fetchChannels();
+
+      this.store.status = "OK";
+      console.timeEnd('messaging-init');
+      return ;
     }
-    */
+  },
+  watch: {
+
+    'store.account.seed': async function(seed) { try {
+      if (!!seed) { /* TODO check seed */
+        console.debug('detected new seed');
+        localStorage.setItem('seed', seed);
+        await this.startMessaging(seed);
+      }
+    } catch (e) { console.error(e) } },
+
+    'store.channels': {
+      handler: (current) => console.log('channels changed', current),
+      deep: true
+    }
   }
 });

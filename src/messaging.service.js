@@ -2,161 +2,158 @@ const Mam = require('mam.client');
 
 class Messaging {
 
-  constructor(store) {
+  constructor(iota, seed) {
     console.debug('building Messaging object');
-    this.vue = store.vue;
-    this.store = this.vue.store;
-    /*
-    this.store.channels = {
-      public:       {},
-      private:      {},
-      restricted:   {}
+    this.iota      = iota;
+    this.seed      = seed;
+    this.channels  = {
+      private:    {},
+      restricted: {},
+      public:     {}
     };
-    */
-    this.data = this.initThread(0, 'private')
-      .then(this.fetchThreads.bind(this))
-      .catch(e => console.error(e));
   }
 
-  fetchThreads() {
-    this.store.status = 'loading channels...';
-    const data = this.store.channels.private['0'].messages;
-    console.debug('data channel', data);
-    const threads = data.filter(message => message.type === 'thread');
-    this.loadThreads(threads)
-      // .then(() => this.store.status = 'OK');
-  }
+  async init() { try {
+    console.debug('initializing private data channel');
+    this.dataID = { index: 0, mode: 'private', name: 'data' };
+    this.data = await this._initChannel(this.dataID);
+    this._storeChannel(this.dataID, this.data);
+    return this.channels;
+  } catch (e) { console.error(e) } }
 
-  async loadThreads(references) { try {
-    references.map(async function(reference) {
-      const thread = await this.initThread(
-        reference.id, reference.mode, reference.sidekey
-      );
-      console.debug(`loaded ${reference.mode} channel ${reference.id}`);
-      /*
-      this.store.vue.$set(
-        this.store.channels[reference.mode],
-        reference.id,
-        thread
-      );
-      */
-    }.bind(this))
+  async fetchChannels() { try {
+    console.debug('data channel', this.data);
+
+    const channels = {
+      private:    { '0': this.data },
+      restricted: {},
+      public:     {}
+    };
+
+    const channelIDs = this.data.messages.filter(
+      message => message.type === 'channel'
+    );
+
+    channelIDs.map(async function(channelID) { try {
+      console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
+      const channel = await this._initChannel(channelID);
+      channels[channelID.mode][channelID.index] = channel;
+    } catch (e) { console.error(e) } }.bind(this));
+
+    return channels;
+  } catch (e) { console.error(e) } }
+
+  async createChannel(mode, sidekey) { try {
+    const name  = prompt('enter a name for this channel');
+    const index = this._generateID(mode);
+    console.log(`creating ${mode} channel ${name} (${index})`);
+    const channel = await this._initChannel({ index, mode, sidekey, name });
+    this._addData({ type: 'channel', mode, sidekey, index, name });
+    return channel;
   } catch(e) { console.error(e) } }
 
-  async addData(data) { try {
-    await this.send(data, 0, 'private', 0);
-  } catch(e) { console.error(e) } }
-
-  async send(packet, value, mode, id) { try {
+  async send(packet, value, id) { try {
     console.debug(
-      `sending message in ${mode} channel ${id} with value ${value}`,
+      `sending message in ${id.mode} channel ${id.name} with ${value} IOTA`,
       packet
     );
-    const data    = this.store.iota.utils.toTrytes(JSON.stringify(packet));
-    const message = Mam.create(this.store.channels[mode][id].state, data);
+    console.time('mam-create-message');
+    const data    = this.iota.utils.toTrytes(JSON.stringify(packet));
+    console.log(this.channels)
+    const message = Mam.create(this.channels[id.mode][id.index].state, data);
+    console.timeEnd('mam-create-message');
 
-    console.debug('attaching...')
-    this.store.channels[mode][id].state = message.state;
+    console.time('mam-attaching')
+    this.channels[id.mode][id.index].state = message.state;
     await Mam.attach(message.payload, message.address);
-    console.debug('sent.');
+    console.timeEnd('mam-attaching')
 
     return message.root;
   } catch(e) { console.error(e) } }
 
-  async createThread(mode, sidekey) { try {
-    const name = prompt('enter a name for this channel');
-    const id   = this.generateID(mode);
-    console.log(`creating ${mode} channel ${name} with id ${id}`);
-    await this.initThread(id, mode, sidekey);
-    this.addData({ type: 'thread', mode, sidekey, id, name });
-  } catch(e) { console.error(e) } }
-
-  getThread(id, mode) {
-    return this.store.channels[mode][id];
+  /*
+  _getThread(id, mode) {
+    return this.channels[mode][id];
   }
+  */
 
-  generateID(mode) {
+  _generateID(mode) {
     const max = 999999;
-    let id;
+    let index;
     do {
-      id = Math.floor(Math.random() * (max - 1))
-    } while (this.store.channels[mode][id]);
-    return id;
+      index = Math.floor(Math.random() * (max - 1))
+    } while (this.channels[mode][index]);
+    return index;
   }
 
-  async initThread(id, mode, sidekey) { try {
+  async _addData(data) { try {
+    await this.send(data, 0, this.dataID);
+  } catch (e) { console.error(e) } }
 
-    // init MAM object to the right mode and pkey
-    console.debug(`${mode} channel ${id} init`);
-    let state = Mam.init(
-      this.store.iota,
-      await this.deriveAddress(this.store.account.seed, id)
+  async _initChannel(channelID) { try {
+    console.debug(
+      `${channelID.mode} channel ${channelID.name} (${channelID.index}) init`
     );
-    if (mode !== 'public')
-      state = Mam.changeMode(state, mode, sidekey);
+    let channel = { name: channelID.name };
+
+    // init MAM object to the right address and mode
+    const address = await this._deriveAddress(this.seed, channelID.index)
+    channel.state = Mam.init(this.iota, address);
+    if (channelID.mode !== 'public')
+      channel.state = Mam.changeMode(
+        channel.state,
+        channelID.mode,
+        channelID.sidekey
+      );
 
     // fetch history
-    console.debug(`fetching ${mode} channel ${id}...`)
-    const thread = await Mam.fetch(Mam.getRoot(state), mode, sidekey);
-    console.debug('done fetching');
-    // convert from trytes to bytes
-    thread.messages = thread.messages.map(message => this.extractMessage(message));
-    // set message sending index to current thread length
-    state.channel.start = thread.messages.length;
-    // include mam state in thread
-    thread.state = state;
-
-    // store thread
-    this.store.channels[mode][id] = thread;
-    // modeList[id] = thread;
-
-    // this.store.vue.$set(this.store.channels, mode, modeList);
-    // console.log(this.store.channels[mode][id]);
-    // this.store.vue.$set(this.store.channels[mode][id], 'messages', thread.messages);
-
-    /*
-    this.store.channels[mode] = Object.assign(
-      {},
-      this.store.channels[mode],
-      JSON.parse(JSON.stringify(modeList))
+    console.time('fetched');
+    channel.root = Mam.getRoot(channel.state)
+    channel = Object.assign(channel, await Mam.fetch(
+      channel.root,
+      channelID.mode,
+      channelID.sidekey
+    ));
+    channel.messages = channel.messages.map(
+      message => this._extractMessage(message)
     );
-    */
+    // set message sending index to current thread length
+    channel.state.channel.start = channel.messages.length;
+    console.timeEnd('fetched');
 
-    console.log('inserted thread', this.store.channels[mode][id]);
-    console.debug(`${mode} channel ${id} length: `, state.channel.start);
-
-    // start listening
-    // TODO ZMQ
+    return channel;
     /*
     Mam.fetch(Mam.getRoot(state), mode, sidekey, function(data) {
       console.log(`received message on ${mode} channel ${id}: `, message);
       this.store.channels[mode][id].messages.push(this.extractMessage(message));
     });
     */
-
   } catch(e) { console.error(e) } }
 
-  extractMessage(trytes) {
-    return JSON.parse(this.store.iota.utils.fromTrytes(trytes));
+  _deriveAddress(seed, index) {
+    return new Promise(function(resolve, reject) {
+
+      console.time(`iota-newaddress-${index}`);
+      this.iota.api.getNewAddress(seed, { index }, (error, derived) => {
+        if (error) reject(error);
+        else resolve(derived);
+        console.timeEnd(`iota-newaddress-${index}`, derived);
+        // console.debug(`address ${index}: `, derived);
+      });
+
+    }.bind(this));
   }
 
-  deriveAddress(seed, index) {
-    console.debug('deriving seed: ', seed);
-    return new Promise((resolve, reject) => {
-      this.store.iota.api.getNewAddress(
-        seed,
-        { index },
-        (error, derived) => {
-          if (error) {
-            console.error('deriving address', error);
-            reject(error);
-          } else {
-            console.debug(`address ${index}: `, derived);
-            resolve(derived);
-          }
-        }
-      )
-    });
+  _extractMessage(trytes) {
+    return JSON.parse(this.iota.utils.fromTrytes(trytes));
+  }
+
+  _storeChannel(channelID, channel) {
+    this.channels[channelID.mode][channelID.index] = channel;
+  }
+
+  _storeMessage(channelID, message) {
+    this.channels[channelID.mode][channelID.index].messages.push(message);
   }
 
 }

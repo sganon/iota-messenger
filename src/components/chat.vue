@@ -2,14 +2,18 @@
   <div id="chat">
 
     <div v-if="store.current">
-      <div v-for="message in store.channels[store.current.mode][store.current.id].messages">
+      <div v-for="message in store.channels[store.current.mode][store.current.index].messages">
 
         <div v-if="message.text">
           - {{ message.text }}
         </div>
 
-        <div v-if="message.type === 'thread'">
-          - saved {{ message.mode }} channel {{ message.name}} with id {{ message.id }}
+        <div v-if="message.type === 'channel'">
+          - saved {{ message.mode }} channel {{ message.name }} with id {{ message.index }}
+        </div>
+
+        <div v-else>
+          - {{ JSON.stringify(message) }}
         </div>
 
       </div>
@@ -44,6 +48,7 @@ export default Vue.extend({
   right: 0;
   bottom: 70px;
   left: 250px;
+  padding: 20px;
 }
 
 </style>

@@ -1,45 +1,39 @@
 <template>
   <div id="sidebar">
 
-    <div id="contacts">
-
-      {{ store.status }}
-      <br>
-
-      <!-- <div v-for="(thread, index) in store.threads">
-        <a v-on:click="selectThread(index)" href=#>
-          channel {{ index }}
-        </a>
-      </div> -->
-
-      <a v-if="store.account.seed" v-on:click="selectThread('private', 0)" href=#>
-        Private channel 0 (data)
-      </a>
-
-      <button v-on:click="createThread('restricted')">
-        create Restricted thread
-      </button>
-      <button v-on:click="createThread('public')">
-        create Public thread
-      </button>
-
-      <br>
-      channels
-      <br>
-
-      <div v-for="mode in modes">
-        {{ mode }} channels :
-        <br>
-        <a href=#
-          v-for="(thread, index) in store.channels[mode]"
-          v-on:click="selectThread(mode, index)">
-          {{ index }}
-        </a>
+    <div id="channels">
+      <h3>channels</h3>
+      <div v-if="!store.channels || !store.messaging">
+        No channels yet
       </div>
+      <div v-else v-for="mode in modes">
+        <div v-if="Object.keys(store.channels[mode]).length">
+          <h4>{{ mode }}</h4>
+          <a href=#
+            v-for="(channel, index) in store.channels[mode]"
+            v-on:click="selectChannel(mode, index)">
+            [ {{ index }} ] {{ channel.name }}
+          </a>
+        </div>
+      </div>
+    </div>
 
+    <div id="create-channel">
+      <button v-on:click="createChannel('restricted')">
+        create Restricted channel
+      </button>
+      <button v-on:click="createChannel('public')">
+        create Public channel
+      </button>
+      <button v-on:click="fetchAll()">
+        fetch all channels
+      </button>
       <br>
       <button v-on:click="test()">test</button>
+    </div>
 
+    <div id="status">
+      {{ store.status }}
     </div>
 
   </div>
@@ -49,20 +43,22 @@
 import Vue from 'vue';
 export default Vue.extend({
   props: ['store'],
-  data: () => { return { modes: ['private', 'public', 'restricted'] } },
+  data: function() { return {
+    modes: ['private', 'restricted', 'public'],
+  } },
   methods: {
-    selectThread: function(mode, id) {
-      console.debug(`selected ${mode} channel ${id}`);
-      console.log('loggin selected thread', this.store.channels[mode][id])
-      this.store.current = { mode, id };
+    selectChannel: function(mode, index) {
+      console.debug(`selected ${mode} channel ${index}`);
+      console.log('loggin selected channel', this.store.channels[mode][index])
+      this.store.current = { mode, index };
     },
-    createThread: function(mode) {
+    createChannel: async function(mode) { try {
       let sidekey = null;
-      if (mode === 'restricted') {
-        sidekey = prompt('Please insert a passphrase to restrict your thread');
-      }
-      this.store.messaging.createThread(mode, sidekey);
-    },
+      if (mode === 'restricted')
+        sidekey = prompt('Please insert a passphrase to restrict your channel');
+        console.log(mode, sidekey)
+      this.store.channels = await this.store.messaging.createChannel(mode, sidekey);
+    } catch (e) { console.error(e) } },
     test: function() {
       console.log(this.store.channels.public);
       console.log(Object.keys(this.store.channels.public))
@@ -81,7 +77,20 @@ export default Vue.extend({
   top: 100px;
   bottom: 0;
   left: 0;
-  width: 250px;
+  width: 210px;
+  padding: 20px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+#sidebar #channels {
+  flex-grow: 1;
+}
+
+#sidebar #status {
+  margin-top: 20px;
 }
 
 </style>

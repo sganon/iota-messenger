@@ -33,14 +33,12 @@ export default Vue.extend({
       this.store.status = `sending message...`;
 
       const mode  = this.store.current.mode;
-      const id    = this.store.current.id;
+      const index = this.store.current.index;
       const input = document.querySelector('#message');
       console.log(`sending message to ${mode} channel ${id}:`, input.value);
 
-      // TODO value
-
       const packet  = { text: input.value };
-      const message = this.store.messaging.send(packet, 0, mode, id);
+      const message = this.store.messaging.send(packet, 0, this.store.current);
 
       // reinit for next message
       input.value          = '';

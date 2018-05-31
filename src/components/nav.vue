@@ -36,7 +36,6 @@ export default Vue.extend({
       const seed = prompt('Please insert yout IOTA seed to log in');
       // TODO check seed
       this.store.account.seed = seed;
-      localStorage.setItem('seed', seed);
     },
     generateSeed: function() {
       let seed         = '';
@@ -53,7 +52,6 @@ export default Vue.extend({
       }
       // TODO check seed
       this.store.account.seed = seed;
-      localStorage.setItem('seed', seed);
     },
     logout: function() {
       console.log('logging out');
