@@ -2,8 +2,16 @@
   <div id="chat">
 
     <div v-if="store.current">
-      <div v-for="message in store.current.messages">
-        - {{ message.text }}
+      <div v-for="message in store.channels[store.current.mode][store.current.id].messages">
+
+        <div v-if="message.text">
+          - {{ message.text }}
+        </div>
+
+        <div v-if="message.type === 'thread'">
+          - saved {{ message.mode }} channel {{ message.name}} with id {{ message.id }}
+        </div>
+
       </div>
     </div>
 

@@ -61,9 +61,11 @@ export default Vue.extend({
       // post-logout data
       const status      = 'insert your seed or generate one (not secure)';
       const iota        = this.store.iota;
+      const vue         = this.store.vue;
 
       // reset, restore
       this.store        = this.store.reset;
+      this.store.vue    = vue;
       this.store.status = status;
       this.store.iota   = iota;
 

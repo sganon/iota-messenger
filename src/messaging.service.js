@@ -4,15 +4,50 @@ class Messaging {
 
   constructor(store) {
     console.debug('building Messaging object');
-    this.store    = store;
+    console.log(this)
+    this.vue = store.vue;
+    this.store = this.vue.store;
+    /*
     this.store.channels = {
       public:       {},
       private:      {},
       restricted:   {}
     };
-    this.data = this.initThread(0, 'private');
-    store.status = 'init OK';
+    */
+    this.data = this.initThread(0, 'private')
+      .then(this.fetchThreads.bind(this))
+      .catch(e => console.error(e));
   }
+
+  fetchThreads() {
+    console.log(this);
+    this.store.status = 'loading channels...';
+    const data = this.store.channels.private['0'].messages;
+    console.debug('data channel', data);
+    const threads = data.filter(message => message.type === 'thread');
+    this.loadThreads(threads)
+      .then(() => this.store.status = 'OK');
+  }
+
+  async loadThreads(references) { try {
+    references.map(async (reference) => {
+      const thread = await this.initThread(
+        reference.id, reference.mode, reference.sidekey
+      );
+      console.debug(`loaded ${reference.mode} channel ${reference.id}`);
+      /*
+      this.store.vue.$set(
+        this.store.channels[reference.mode],
+        reference.id,
+        thread
+      );
+      */
+    })
+  } catch(e) { console.error(e) } }
+
+  async addData(data) { try {
+    await this.send(data, 0, 'private', 0);
+  } catch(e) { console.error(e) } }
 
   async send(packet, value, mode, id) { try {
     console.debug(
@@ -30,8 +65,25 @@ class Messaging {
     return message.root;
   } catch(e) { console.error(e) } }
 
+  async createThread(mode, sidekey) { try {
+    const name = prompt('enter a name for this channel');
+    const id   = this.generateID(mode);
+    console.log(`creating ${mode} channel ${name} with id ${id}`);
+    await this.initThread(id, mode, sidekey);
+    this.addData({ type: 'thread', mode, sidekey, id, name });
+  } catch(e) { console.error(e) } }
+
   getThread(id, mode) {
     return this.store.channels[mode][id];
+  }
+
+  generateID(mode) {
+    const max = 999999;
+    let id;
+    do {
+      id = Math.floor(Math.random() * (max - 1))
+    } while (this.store.channels[mode][id]);
+    return id;
   }
 
   async initThread(id, mode, sidekey) { try {
@@ -48,14 +100,32 @@ class Messaging {
     // fetch history
     console.debug(`fetching ${mode} channel ${id}...`)
     const thread = await Mam.fetch(Mam.getRoot(state), mode, sidekey);
+    console.debug('done fetching');
     // convert from trytes to bytes
     thread.messages = thread.messages.map(message => this.extractMessage(message));
     // set message sending index to current thread length
     state.channel.start = thread.messages.length;
     // include mam state in thread
     thread.state = state;
+
     // store thread
-    this.store.channels[mode][id] = thread;
+    const modeList = this.store.channels[mode];
+    modeList[id] = thread;
+    console.log('modelist', JSON.parse(JSON.stringify(modeList)))
+
+    this.store.vue.$set(this.store.channels, mode, modeList);
+    console.log(this.store.channels[mode][id]);
+    // this.store.vue.$set(this.store.channels[mode][id], 'messages', thread.messages);
+
+    /*
+    this.store.channels[mode] = Object.assign(
+      {},
+      this.store.channels[mode],
+      JSON.parse(JSON.stringify(modeList))
+    );
+    */
+
+    console.log('inserted thread', this.store.channels[mode][id]);
     console.debug(`${mode} channel ${id} length: `, state.channel.start);
 
     // start listening
@@ -64,7 +134,6 @@ class Messaging {
       this.store.channels[mode][id].messages.push(this.extractMessage(message));
     });
 
-    // return thread.messages.map(message => this.extractMessage(message));
   } catch(e) { console.error(e) } }
 
   extractMessage(trytes) {
