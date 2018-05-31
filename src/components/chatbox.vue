@@ -1,14 +1,25 @@
 <template>
   <div id="chatbox">
-    <textarea id="message" :disabled="!store.selectedThread || store.mam.sending"></textarea>
+
+    <textarea
+      id="message"
+      :disabled="!store.current || store.isSending">
+    </textarea>
+
     <div id="send">
-      <button v-on:click="sendPayment()" disabled>
+      <button
+        v-on:click="sendPayment()"
+        disabled>
         Send Payment
       </button>
-      <button v-on:click="sendMessage()" :disabled="!store.selectedThread || store.mam.sending">
+
+      <button
+        v-on:click="sendMessage()"
+        :disabled="!store.current || store.isSending">
         Send message
       </button>
     </div>
+
   </div>
 </template>
 
@@ -18,27 +29,23 @@ export default Vue.extend({
   props: ['store'],
   methods: {
     sendMessage: async function() {
-      this.store.mam.sending = true;
-      this.store.account.status = `sending message...`;
+      this.store.isSending = true;
+      this.store.status = `sending message...`;
 
-      const value = document.querySelector('#message').value;
-      console.log(`send message: ${value}`);
+      const mode  = this.store.current.mode;
+      const id    = this.store.current.id;
+      const input = document.querySelector('#message');
+      console.log(`sending message to ${mode} channel ${id}:`, input.value);
 
-      // create message
-      const trytes = this.store.iota.utils.toTrytes(value);
-      const message = this.store.mam.instance.create(this.store.mam.state, trytes);
-      this.store.mam.state = message.state;
+      // TODO value
 
-      // wait for push and fetch
-      await this.store.mam.instance.attach(message.payload, message.address);
-      const history = await this.store.mam.instance.fetch(this.store.mam.root, 'public');
+      const packet  = { text: input.value };
+      const message = this.store.messaging.send(packet, 0, mode, id);
 
-      document.querySelector('#message').value = '';
-      this.store.account.status = `OK`;
-      this.store.mam.sending = false
-
-      this.store.mam.history = [ history.messages ];
-      this.store.selectedThread = this.store.mam.history[0];
+      // reinit for next message
+      input.value          = '';
+      this.store.status    = `OK`;
+      this.store.isSending = false
 
       return message.root;
     },
