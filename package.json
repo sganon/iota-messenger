@@ -1,9 +1,9 @@
 {
   "name": "iota-messenger",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
-  "repository": "https://github.com/sganon/iota-messenger.git",
-  "author": "Simon Ganon <simon@blueboard.io>",
+  "repository": "https://github.com/io-studio/iota-messenger.git",
+  "author": "Pierre-Alexis Ciavaldini <pierre-alexis@ciavaldini.fr>",
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=dev webpack-dev-server --config webpack.dev.js",
@@ -16,13 +16,16 @@
   "dependencies": {
     "@types/iota.lib.js": "^0.4.0",
     "@types/vue": "^2.0.0",
-    "iota.lib.js": "0.4",
+    "iota.lib.js": "^0.4.7",
+    "mam.client": "io-studio/mam.client.js",
     "node-sass": "^4.9.0",
     "vue": "^2.5.16"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.0.0-beta.49",
     "awesome-typescript-loader": "^5.0.0",
     "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "css-loader": "^0.28.11",
     "html-webpack-plugin": "^3.2.0",

@@ -1,8 +1,21 @@
 <template>
-  <div id="chat"></div>
+  <div id="chat">
+    <div v-if="store.selectedThread">
+      <div v-for="message in store.selectedThread">
+        {{ store.iota.utils.fromTrytes(message) }}
+      </div>
+    </div>
+    <div v-else>
+      select a conversation
+    </div>
+  </div>
 </template>
 
 <script>
+import Vue from 'vue';
+export default Vue.extend({
+  props: ['store']
+});
 </script>
 
 <style lang="scss">

@@ -1,21 +1,30 @@
 <template>
   <div id="sidebar">
-    
-    <div id="contacts" v-if="store.account.seed">
-      (contacts)
+
+    <div id="contacts">
+      {{ store.account.status }}
+
+      <div v-for="(thread, index) in store.mam.history">
+        <a v-on:click="selectThread(index)" href=#>
+          channel {{ index }}
+        </a>
+      </div>
+
     </div>
-    
-    <div v-else>
-      Insert IOTA seed to see your contacts
-    </div>
-    
+
   </div>
 </template>
 
 <script>
 import Vue from 'vue';
 export default Vue.extend({
-  props: ['store']
+  props: ['store'],
+  methods: {
+    selectThread: function(index) {
+      console.log(index);
+      this.store.selectedThread = this.store.mam.history[index];
+    }
+  }
 });
 </script>
 

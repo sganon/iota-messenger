@@ -1,9 +1,13 @@
 <template>
   <div id="chatbox">
-    <textarea id="message"></textarea>
+    <textarea id="message" :disabled="!store.selectedThread || store.mam.sending"></textarea>
     <div id="send">
-      <button v-on:click="sendPayment()">Send Payment</button>
-      <button v-on:click="sendMessage()">Send message</button>
+      <button v-on:click="sendPayment()" disabled>
+        Send Payment
+      </button>
+      <button v-on:click="sendMessage()" :disabled="!store.selectedThread || store.mam.sending">
+        Send message
+      </button>
     </div>
   </div>
 </template>
@@ -13,9 +17,30 @@ import Vue from 'vue';
 export default Vue.extend({
   props: ['store'],
   methods: {
-    sendMessage: function() {
-      const msgBox = document.querySelector('#message');
-      console.log(`send message: ${msgBox.value}`);
+    sendMessage: async function() {
+      this.store.mam.sending = true;
+      this.store.account.status = `sending message...`;
+
+      const value = document.querySelector('#message').value;
+      console.log(`send message: ${value}`);
+
+      // create message
+      const trytes = this.store.iota.utils.toTrytes(value);
+      const message = this.store.mam.instance.create(this.store.mam.state, trytes);
+      this.store.mam.state = message.state;
+
+      // wait for push and fetch
+      await this.store.mam.instance.attach(message.payload, message.address);
+      const history = await this.store.mam.instance.fetch(this.store.mam.root, 'public');
+
+      document.querySelector('#message').value = '';
+      this.store.account.status = `OK`;
+      this.store.mam.sending = false
+
+      this.store.mam.history = [ history.messages ];
+      this.store.selectedThread = this.store.mam.history[0];
+
+      return message.root;
     },
     sendPayment: function() {
       const value = prompt('how much IOTA do you want to send ?');

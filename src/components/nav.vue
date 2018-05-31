@@ -54,6 +54,10 @@ export default Vue.extend({
     logout: function() {
       this.store.account.seed = undefined;
       localStorage.removeItem('seed');
+      this.store.mam.root = undefined;
+      this.store.mam.history.length = 0;
+      this.store.selectedThread = [];
+      this.store.account.status = 'insert your seed or generate one (not secure)';
     }
   }
 });
