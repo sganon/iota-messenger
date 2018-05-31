@@ -1,14 +1,14 @@
 'use strict'
 const path = require('path');
 const { VueLoaderPlugin } = require('vue-loader');
-const htmlWebpackPlugin = require('html-webpack-plugin');
+const htmlWebpackPlugin   = require('html-webpack-plugin');
 
 const PUBLIC_DIR = path.resolve(__dirname);
 
 module.exports = {
   mode: 'development',
   entry: [
-    './index.ts'
+    './index.js'
   ],
   output: {
     filename: 'bundle.js',

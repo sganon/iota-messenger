@@ -2,13 +2,20 @@
   <div id="sidebar">
 
     <div id="contacts">
-      {{ store.account.status }}
 
-      <div v-for="(thread, index) in store.mam.history">
+      {{ store.status }}
+      <br>
+
+      <!-- <div v-for="(thread, index) in store.threads">
         <a v-on:click="selectThread(index)" href=#>
           channel {{ index }}
         </a>
-      </div>
+      </div> -->
+
+      <a v-if="store.account.seed" v-on:click="selectThread('private', 0)" href=#>
+        Private channel 0 (data)
+      </a>
+
 
     </div>
 
@@ -20,9 +27,9 @@ import Vue from 'vue';
 export default Vue.extend({
   props: ['store'],
   methods: {
-    selectThread: function(index) {
-      console.log(index);
-      this.store.selectedThread = this.store.mam.history[index];
+    selectThread: function(mode, id) {
+      console.debug(`selected ${mode} channel ${id}`);
+      this.store.current = { mode, id };
     }
   }
 });

@@ -19,9 +19,11 @@
       </div>
     </div>
 
+    <!--
     <div id="iota-version">
       iota version: {{ store.node.appVersion }}
     </div>
+    -->
   </div>
 </template>
 
@@ -32,6 +34,7 @@ export default Vue.extend({
   methods: {
     insertSeed: function() {
       const seed = prompt('Please insert yout IOTA seed to log in');
+      // TODO check seed
       this.store.account.seed = seed;
       localStorage.setItem('seed', seed);
     },
@@ -48,16 +51,24 @@ export default Vue.extend({
           createdChars += 1;
         }
       }
+      // TODO check seed
       this.store.account.seed = seed;
       localStorage.setItem('seed', seed);
     },
     logout: function() {
-      this.store.account.seed = undefined;
+      console.log('logging out');
+
+      // post-logout data
+      const status      = 'insert your seed or generate one (not secure)';
+      const iota        = this.store.iota;
+
+      // reset, restore
+      this.store        = this.store.reset;
+      this.store.status = status;
+      this.store.iota   = iota;
+
+      // clean
       localStorage.removeItem('seed');
-      this.store.mam.root = undefined;
-      this.store.mam.history.length = 0;
-      this.store.selectedThread = [];
-      this.store.account.status = 'insert your seed or generate one (not secure)';
     }
   }
 });
