@@ -22,8 +22,10 @@ class Messaging {
     const data    = this.store.iota.utils.toTrytes(JSON.stringify(packet));
     const message = Mam.create(this.store.channels[mode][id].state, data);
 
+    console.debug('attaching...')
     this.store.channels[mode][id].state = message.state;
     await Mam.attach(message.payload, message.address);
+    console.debug('sent.');
 
     return message.root;
   } catch(e) { console.error(e) } }
@@ -44,6 +46,7 @@ class Messaging {
       state = Mam.changeMode(state, 'private', sidekey);
 
     // fetch history
+    console.debug(`fetching ${mode} channel ${id}...`)
     const thread = await Mam.fetch(Mam.getRoot(state), mode, sidekey);
     // convert from trytes to bytes
     thread.messages = thread.messages.map(message => this.extractMessage(message));
@@ -57,7 +60,6 @@ class Messaging {
 
     // start listening
     Mam.fetch(Mam.getRoot(state), mode, sidekey, function(data) {
-      const message = this.store.iota.utils.fromTrytes(data);
       console.log(`received message on ${mode} channel ${id}: `, message);
       this.store.channels[mode][id].messages.push(this.extractMessage(message));
     });

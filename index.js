@@ -68,6 +68,7 @@ const app = new Vue({
       }
     },
     'store.current': function (current) {
+      console.debug('changing current', current);
       this.store.current.messages = this.store.channels[this.store.current.mode][this.store.current.id].messages;
     }
   }
