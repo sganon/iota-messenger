@@ -4,7 +4,6 @@ class Messaging {
 
   constructor(store) {
     console.debug('building Messaging object');
-    console.log(this)
     this.vue = store.vue;
     this.store = this.vue.store;
     /*
@@ -20,17 +19,16 @@ class Messaging {
   }
 
   fetchThreads() {
-    console.log(this);
     this.store.status = 'loading channels...';
     const data = this.store.channels.private['0'].messages;
     console.debug('data channel', data);
     const threads = data.filter(message => message.type === 'thread');
     this.loadThreads(threads)
-      .then(() => this.store.status = 'OK');
+      // .then(() => this.store.status = 'OK');
   }
 
   async loadThreads(references) { try {
-    references.map(async (reference) => {
+    references.map(async function(reference) {
       const thread = await this.initThread(
         reference.id, reference.mode, reference.sidekey
       );
@@ -42,7 +40,7 @@ class Messaging {
         thread
       );
       */
-    })
+    }.bind(this))
   } catch(e) { console.error(e) } }
 
   async addData(data) { try {
@@ -95,7 +93,7 @@ class Messaging {
       await this.deriveAddress(this.store.account.seed, id)
     );
     if (mode !== 'public')
-      state = Mam.changeMode(state, 'private', sidekey);
+      state = Mam.changeMode(state, mode, sidekey);
 
     // fetch history
     console.debug(`fetching ${mode} channel ${id}...`)
@@ -109,12 +107,11 @@ class Messaging {
     thread.state = state;
 
     // store thread
-    const modeList = this.store.channels[mode];
-    modeList[id] = thread;
-    console.log('modelist', JSON.parse(JSON.stringify(modeList)))
+    this.store.channels[mode][id] = thread;
+    // modeList[id] = thread;
 
-    this.store.vue.$set(this.store.channels, mode, modeList);
-    console.log(this.store.channels[mode][id]);
+    // this.store.vue.$set(this.store.channels, mode, modeList);
+    // console.log(this.store.channels[mode][id]);
     // this.store.vue.$set(this.store.channels[mode][id], 'messages', thread.messages);
 
     /*
@@ -129,10 +126,13 @@ class Messaging {
     console.debug(`${mode} channel ${id} length: `, state.channel.start);
 
     // start listening
+    // TODO ZMQ
+    /*
     Mam.fetch(Mam.getRoot(state), mode, sidekey, function(data) {
       console.log(`received message on ${mode} channel ${id}: `, message);
       this.store.channels[mode][id].messages.push(this.extractMessage(message));
     });
+    */
 
   } catch(e) { console.error(e) } }
 

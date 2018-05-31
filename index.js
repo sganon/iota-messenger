@@ -81,8 +81,12 @@ const app = new Vue({
         this.store.messaging = new Messaging(this.store);
       }
     },
-    'store.channels': (current) => console.log('channels', current),
+    'store.channels': {
+      handler: (current) => console.log('channels', current),
+      deep: true
+    },
     'store.channels.public': (current) => console.log('channels.public', current),
+    'store.channels.private': (current) => console.log('channels.private', current),
     /*
     'store.current': function (current) {
       console.debug('changing current', current);
