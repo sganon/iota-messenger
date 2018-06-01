@@ -73,6 +73,7 @@ const app = new Vue({
     startMessaging: async function(seed) {
       console.time('messaging-init');
 
+      // TODO link channels from the start ?
       const messaging = new Messaging(this.iota, seed, this.$set);
       this.store.messaging = messaging;
 

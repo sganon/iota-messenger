@@ -151,7 +151,6 @@ class Messaging {
   }
 
   _storeMessage(channelID, message) {
-    console.log('storemessage this', this);
     this.channels[channelID.mode][channelID.index].messages.push(message);
   }
 
