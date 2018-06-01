@@ -105,7 +105,7 @@ class Messaging {
       );
 
     // fetch history
-    console.time('fetched');
+    console.time(`fetched-${channelID.index}`);
     channel.root = Mam.getRoot(channel.state)
     channel = Object.assign(channel, await Mam.fetch(
       channel.root,
@@ -117,7 +117,7 @@ class Messaging {
     );
     // set message sending index to current thread length
     channel.state.channel.start = channel.messages.length;
-    console.timeEnd('fetched');
+    console.timeEnd(`fetched-${channelID.index}`);
 
     return channel;
     /*
