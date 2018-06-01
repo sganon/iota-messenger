@@ -19,7 +19,7 @@
     "iota.lib.js": "^0.4.7",
     "mam.client": "io-studio/mam.client.js",
     "node-sass": "^4.9.0",
-    "vue": "^2.5.16"
+    "vue": "^2.5.16",
   },
   "devDependencies": {
     "@babel/preset-env": "^7.0.0-beta.49",

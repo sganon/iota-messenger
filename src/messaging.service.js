@@ -1,4 +1,5 @@
 const Mam = require('mam.client');
+const zmq = require('zeromq').socket('sub');
 
 class Messaging {
 
@@ -21,6 +22,27 @@ class Messaging {
     this._storeChannel(this.dataID, this.data);
     return this.channels;
   } catch (e) { console.error(e) } }
+
+  initZMQ() {
+    const url = 'tcp://node.iota-tangle.io:5556';
+    zmq.connect(url);
+
+    zmq.subscribe('tx')  /* newly seen transactions */
+    zmq.subscribe('sn')  /* newly confirmed transactions */
+    zmq.subscribe('lmi') /* latest milestone index */
+
+    zmq.on('message', msg => {
+      const data = msg.toString().split(' ');
+      switch (data[0]) {
+        case 'tx':
+          console.log('received tx', data);
+        case 'sn':
+          console.log('received sn', data);
+        case 'lmi':
+          console.log('received lmi', data);
+      }
+    });
+  }
 
   async fetchChannels() { try {
     console.debug('data channel', this.data);
@@ -66,6 +88,10 @@ class Messaging {
     this._storeMessage(id, packet);
     return packet;
   } catch(e) { console.error(e) } }
+
+  subscribe(mode, root, sidekey) {
+    console.debug(`subscribing to ${mode} channel`, root);
+  }
 
   /*
   _getThread(id, mode) {

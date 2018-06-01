@@ -8,22 +8,32 @@
       </div>
       <div v-else v-for="mode in modes">
         <div v-if="Object.keys(store.channels[mode]).length">
-          <h4>{{ mode }}</h4>
+
+          <div class="mode-header">
+            <h4>{{ mode }}</h4>
+            <div class="controls">
+              <button v-on:click="createChannel(mode)">
+                create
+              </button>
+              <button
+                v-if="mode !== 'private'"
+                v-on:click="joinChannel(mode)">
+                join
+              </button>
+            </div>
+          </div>
+
           <a href=# class="channel"
             v-for="(channel, index) in store.channels[mode]"
             v-on:click="selectChannel(mode, index)">
             [ {{ index }} ] {{ channel.name }}
           </a>
+
         </div>
       </div>
     </div>
 
     <div id="create-channel">
-      <button
-        v-for="mode in modes"
-        v-on:click="createChannel(mode)">
-        create {{ mode }} channel
-      </button>
       <button v-on:click="fetchAll()" disabled>
         fetch all channels
       </button>
@@ -59,6 +69,12 @@ export default Vue.extend({
       const index = this.store.messaging.data.messages.slice(-1)[0].index;
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
+    joinChannel: function(mode) {
+      // TODO check root
+      const root = prompt(`address of the ${mode} room:`);
+      const pass = mode === 'restricted' ? prompt('password:') : null;
+      this.store.messaging.subscribe(mode, root, pass);
+    },
     test: function() {
       console.log(this.store.channels.public);
       console.log(Object.keys(this.store.channels.public))
@@ -82,7 +98,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 #sidebar #channels {
@@ -92,6 +108,14 @@ export default Vue.extend({
 #sidebar .channel {
   display: block;
 }
+
+#sidebar .mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+#sideba
 
 #sidebar #status {
   margin-top: 20px;
