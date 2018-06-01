@@ -1,22 +1,38 @@
 <template>
   <div id="sidebar">
 
-    <div id="contacts">
+    <div id="channels">
+      <h3>channels</h3>
+      <div v-if="!store.channels || !store.messaging">
+        No channels yet
+      </div>
+      <div v-else v-for="mode in modes">
+        <div v-if="Object.keys(store.channels[mode]).length">
+          <h4>{{ mode }}</h4>
+          <a href=# class="channel"
+            v-for="(channel, index) in store.channels[mode]"
+            v-on:click="selectChannel(mode, index)">
+            [ {{ index }} ] {{ channel.name }}
+          </a>
+        </div>
+      </div>
+    </div>
 
-      {{ store.status }}
+    <div id="create-channel">
+      <button
+        v-for="mode in modes"
+        v-on:click="createChannel(mode)">
+        create {{ mode }} channel
+      </button>
+      <button v-on:click="fetchAll()" disabled>
+        fetch all channels
+      </button>
       <br>
+      <button v-on:click="test()" disabled>test</button>
+    </div>
 
-      <!-- <div v-for="(thread, index) in store.threads">
-        <a v-on:click="selectThread(index)" href=#>
-          channel {{ index }}
-        </a>
-      </div> -->
-
-      <a v-if="store.account.seed" v-on:click="selectThread('private', 0)" href=#>
-        Private channel 0 (data)
-      </a>
-
-
+    <div id="status">
+      {{ store.status }}
     </div>
 
   </div>
@@ -26,11 +42,29 @@
 import Vue from 'vue';
 export default Vue.extend({
   props: ['store'],
+  data: function() { return {
+    modes: ['private', 'restricted', 'public'],
+  } },
   methods: {
-    selectThread: function(mode, id) {
-      console.debug(`selected ${mode} channel ${id}`);
-      this.store.current = { mode, id };
+    selectChannel: function(mode, index) {
+      console.debug(`selected ${mode} channel ${index}`);
+      this.store.current = { mode, index };
+    },
+    createChannel: async function(mode) { try {
+      let sidekey = null;
+      if (mode === 'restricted')
+        sidekey = prompt('Please insert a passphrase to restrict your channel');
+      this.store.status = `creating ${mode} channel...`
+      const channel = await this.store.messaging.createChannel(mode, sidekey);
+      const index = this.store.messaging.data.messages.slice(-1)[0].index;
+      this.store.status = `OK`
+    } catch (e) { console.error(e) } },
+    test: function() {
+      console.log(this.store.channels.public);
+      console.log(Object.keys(this.store.channels.public))
     }
+  },
+  mounted: function() {
   }
 });
 </script>
@@ -43,7 +77,24 @@ export default Vue.extend({
   top: 100px;
   bottom: 0;
   left: 0;
-  width: 250px;
+  width: 210px;
+  padding: 20px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+#sidebar #channels {
+  flex-grow: 1;
+}
+
+#sidebar .channel {
+  display: block;
+}
+
+#sidebar #status {
+  margin-top: 20px;
 }
 
 </style>

@@ -12,21 +12,23 @@ import sidebar   from './src/components/sidebar.vue';
 
 const data = {
   store: {
-    status:     'insert your seed or generate one (not secure)',
-    iota:       undefined,
-    messaging:  undefined,
-    channels:   undefined,
-    current:    undefined,
+    vue:          undefined,
+    iota:         undefined,
+    status:       'insert / generate seed',
     account: {
-      seed:     undefined,
+      seed:       undefined,
     },
-    isSending:  false,
-    reset:      undefined
+    messaging:    undefined,
+    channels:     undefined,
+    current:      undefined,
+    isSending:    false,
+    reset:        undefined
   },
 }
 
 const app = new Vue({
   el: '#app',
+  // data: function() { return data },
   data,
   components: {
     'im-nav':     nav,
@@ -34,22 +36,15 @@ const app = new Vue({
     'im-chat':    chat,
     'im-chatbox': chatbox,
   },
-  created: function() {
+  created: async function() {
     console.debug('#app created');
 
-    // for latter logging out
-    this.store.reset = data;
+    // hard copy for latter logging out
+    this.store.reset = JSON.parse(JSON.stringify(data.store));
+    this.store.vue = this;
 
     // TODO IOTA Service
-    this.store.iota = new IOTA({
-      provider: 'http://nodes.iota.fm:80',
-    });
-    this.store.iota.api.getNodeInfo((error, info) => {
-      if (error) console.error('instanciating IOTA', error);
-      else {
-        console.debug('node info:', info);
-      }
-    });
+    this.iota = await this.iotaInit();
 
     // TODO where to move this ?
     const seed = localStorage.getItem('seed');
@@ -59,17 +54,48 @@ const app = new Vue({
     }
 
   },
-  watch: {
-    'store.account.seed': async function(current, previous) {
-      if (!!current) {
-        console.debug('inserted new seed');
-        this.store.status = "opening account...";
-        this.store.messaging = new Messaging(this.store);
-      }
+  methods: {
+    iotaInit: function() {
+      return new Promise ((resolve, reject) => {
+
+        console.time('iota-init');
+        const iota = new IOTA({ provider: 'https://node.iota-tangle.io:14265' });
+        iota.api.getNodeInfo((error, info) => {
+          if (error) reject(error);
+          else {
+            console.debug(info);
+            resolve(iota);
+          }
+          console.timeEnd('iota-init');
+        });
+
+      });
     },
-    'store.current': function (current) {
-      console.debug('changing current', current);
-      this.store.current.messages = this.store.channels[this.store.current.mode][this.store.current.id].messages;
+    startMessaging: async function(seed) {
+      console.time('messaging-init');
+
+      // TODO link channels from the start ?
+      const messaging = new Messaging(this.iota, seed, this.$set);
+      this.store.messaging = messaging;
+
+      this.store.status   = "opening messaging account...";
+      this.store.channels = await messaging.init();
+      this.store.status   = "loading channels...";
+      await messaging.fetchChannels();
+
+      this.store.status = "OK";
+      console.timeEnd('messaging-init');
+      return ;
     }
+  },
+  watch: {
+    'store.account.seed': async function(seed, prev) { try {
+      console.debug(seed, prev, !!seed);
+      if (!!seed) { /* TODO check seed */
+        console.debug('detected new seed');
+        localStorage.setItem('seed', seed);
+        await this.startMessaging(seed);
+      }
+    } catch (e) { console.error(e) } }
   }
 });
