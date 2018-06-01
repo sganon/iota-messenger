@@ -63,23 +63,8 @@ export default Vue.extend({
         status: 'insert / generate seed',
         reset:  this.store.reset
       });
-      console.log(reset);
-      // const vue         = this.store.vue;
-      // const iota        = this.store.iota;
-      // const status      = 'insert your seed or generate one (not secure)';
-
-      // reset, restore
-      // this.store        = this.store.reset;
-      // this.store.vue    = vue;
-      // this.store.status = status;
-      // this.store.iota   = iota;
-      Object.keys(this.store).map(key => {
-        console.debug('reseting', key, reset[key]);
-        // this.$set(this.store, key, reset[key])
-        this.$set(this.store, key, reset[key])
-      });
+      Object.keys(this.store).map(key => this.$set(this.store, key, reset[key]));
       this.$set(this.store.account, 'seed', undefined);
-      console.log('store after restore', this.store)
 
       // clean
       localStorage.removeItem('seed');

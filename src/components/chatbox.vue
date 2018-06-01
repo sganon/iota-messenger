@@ -34,9 +34,9 @@ export default Vue.extend({
       this.store.status = `sending message...`;
 
       const mode  = this.store.current.mode;
-      const index = this.store.current.index;
+      const name  = this.store.current.name;
       const input = document.querySelector('#message');
-      console.log(`sending message to ${mode} channel ${index}:`, input.value);
+      console.log(`sending message to ${mode} channel ${name}:`, input.value);
 
       // TODO iota value
       const packet  = { type: 'message', text: input.value, value: 0 };

@@ -41,7 +41,6 @@ const app = new Vue({
 
     // hard copy for latter logging out
     this.store.reset = JSON.parse(JSON.stringify(data.store));
-    console.log(this.store.reset);
     this.store.vue = this;
 
     // TODO IOTA Service

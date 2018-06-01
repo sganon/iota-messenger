@@ -9,8 +9,8 @@
         </div>
 
         <div v-else-if="message.type === 'channel'">
-          - saved {{ message.mode }} channel {{ message.name }} ({{ message.index }})
-            {{ message.sidekey ? `and pass ${message.sidekey}` : '' }}
+          - saved {{ message.mode }} channel "{{ message.name }}" ({{ message.index }})
+            {{ message.sidekey ? `and pass "${message.sidekey}"` : '' }}
         </div>
 
         <div v-else>

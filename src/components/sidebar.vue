@@ -48,7 +48,6 @@ export default Vue.extend({
   methods: {
     selectChannel: function(mode, index) {
       console.debug(`selected ${mode} channel ${index}`);
-      console.log('loggin selected channel', this.store.channels[mode][index])
       this.store.current = { mode, index };
     },
     createChannel: async function(mode) { try {
@@ -58,7 +57,6 @@ export default Vue.extend({
       this.store.status = `creating ${mode} channel...`
       const channel = await this.store.messaging.createChannel(mode, sidekey);
       const index = this.store.messaging.data.messages.slice(-1)[0].index;
-      // this.store.channels[mode][index] = channel;
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
     test: function() {
