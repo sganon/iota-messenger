@@ -29,6 +29,7 @@ export default Vue.extend({
   props: ['store'],
   methods: {
     sendMessage: async function() {
+      if (this.store.isSending) return ;
       this.store.isSending = true;
       this.store.status = `sending message...`;
 
@@ -38,11 +39,14 @@ export default Vue.extend({
       console.log(`sending message to ${mode} channel ${index}:`, input.value);
 
       // TODO iota value
-      const packet  = { text: input.value };
+      console.log(this.store.channels[mode][index].messages);
+      const packet  = { type: 'message', text: input.value, value: 0 };
       const message = await this.store.messaging.send(
         packet, 0, this.store.current
       );
-      this.store.channels[mode][index].messages.push(message);
+      console.log(this.store.channels[mode][index].messages);
+      // this.store.channels[mode][index].messages.push(message);
+      // console.log(this.store.channels[mode][index].messages);
 
       // reinit for next message
       input.value          = '';

@@ -58,7 +58,7 @@ export default Vue.extend({
       this.store.status = `creating ${mode} channel...`
       const channel = await this.store.messaging.createChannel(mode, sidekey);
       const index = this.store.messaging.data.messages.slice(-1)[0].index;
-      this.store.channels[mode][index] = channel;
+      // this.store.channels[mode][index] = channel;
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
     test: function() {

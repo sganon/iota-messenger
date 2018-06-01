@@ -2,10 +2,11 @@ const Mam = require('mam.client');
 
 class Messaging {
 
-  constructor(iota, seed) {
+  constructor(iota, seed, set) {
     console.debug('building Messaging object');
     this.iota      = iota;
     this.seed      = seed;
+    this.set       = set;
     this.channels  = {
       private:    {},
       restricted: {},
@@ -27,7 +28,6 @@ class Messaging {
     const channelIDs = this.data.messages.filter(
       message => message.type === 'channel'
     );
-    console.log(channelIDs);
 
     await Promise.all(channelIDs.map(async function(channelID) { try {
       console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
@@ -35,7 +35,6 @@ class Messaging {
       this._storeChannel(channelID, channel);
     } catch (e) { console.error(e) } }.bind(this)));
 
-    console.log(this.channels);
     return this.channels;
   } catch (e) { console.error(e) } }
 
@@ -56,7 +55,6 @@ class Messaging {
     );
     console.time('mam-create-message');
     const data    = this.iota.utils.toTrytes(JSON.stringify(packet));
-    console.log(this.channels);
     const message = Mam.create(this.channels[id.mode][id.index].state, data);
     console.timeEnd('mam-create-message');
 
@@ -105,7 +103,7 @@ class Messaging {
       );
 
     // fetch history
-    console.time(`fetched-${channelID.index}`);
+    console.time(`fetched-${channelID.mode}-${channelID.index}`);
     channel.root = Mam.getRoot(channel.state)
     channel = Object.assign(channel, await Mam.fetch(
       channel.root,
@@ -117,7 +115,7 @@ class Messaging {
     );
     // set message sending index to current thread length
     channel.state.channel.start = channel.messages.length;
-    console.timeEnd(`fetched-${channelID.index}`);
+    console.timeEnd(`fetched-${channelID.mode}-${channelID.index}`);
 
     return channel;
     /*
@@ -147,10 +145,13 @@ class Messaging {
   }
 
   _storeChannel(channelID, channel) {
-    this.channels[channelID.mode][channelID.index] = channel;
+    // this.channels[channelID.mode][channelID.index] = channel;
+    this.set(this.channels[channelID.mode], channelID.index, channel);
+    console.debug(`stored ${channelID.mode} channel ${channelID.name}`);
   }
 
   _storeMessage(channelID, message) {
+    console.log('storemessage this', this);
     this.channels[channelID.mode][channelID.index].messages.push(message);
   }
 

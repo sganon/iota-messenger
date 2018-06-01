@@ -73,13 +73,13 @@ const app = new Vue({
     startMessaging: async function(seed) {
       console.time('messaging-init');
 
-      const messaging = new Messaging(this.iota, seed);
+      const messaging = new Messaging(this.iota, seed, this.$set);
       this.store.messaging = messaging;
 
       this.store.status   = "opening messaging account...";
       this.store.channels = await messaging.init();
       this.store.status   = "loading channels...";
-      this.store.channels = await messaging.fetchChannels();
+      await messaging.fetchChannels();
 
       this.store.status = "OK";
       console.timeEnd('messaging-init');
@@ -93,10 +93,6 @@ const app = new Vue({
         localStorage.setItem('seed', seed);
         await this.startMessaging(seed);
       }
-    } catch (e) { console.error(e) } },
-    'store.channels': {
-      handler: (current) => console.log('channels changed', current),
-      deep: true
-    }
+    } catch (e) { console.error(e) } }
   }
 });
