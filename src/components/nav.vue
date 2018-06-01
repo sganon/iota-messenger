@@ -34,8 +34,8 @@ export default Vue.extend({
   methods: {
     insertSeed: function() {
       const seed = prompt('Please insert yout IOTA seed to log in');
-      // TODO check seed
       this.store.account.seed = seed;
+      // this.$set(this.store.account, 'seed', seed);
     },
     generateSeed: function() {
       let seed         = '';
@@ -57,15 +57,29 @@ export default Vue.extend({
       console.log('logging out');
 
       // post-logout data
-      const status      = 'insert your seed or generate one (not secure)';
-      const iota        = this.store.iota;
-      const vue         = this.store.vue;
+      const reset = Object.assign(this.store.reset, {
+        vue:    this.store.vue,
+        iota:   this.store.iota,
+        status: 'insert / generate seed',
+        reset:  this.store.reset
+      });
+      console.log(reset);
+      // const vue         = this.store.vue;
+      // const iota        = this.store.iota;
+      // const status      = 'insert your seed or generate one (not secure)';
 
       // reset, restore
-      this.store        = this.store.reset;
-      this.store.vue    = vue;
-      this.store.status = status;
-      this.store.iota   = iota;
+      // this.store        = this.store.reset;
+      // this.store.vue    = vue;
+      // this.store.status = status;
+      // this.store.iota   = iota;
+      Object.keys(this.store).map(key => {
+        console.debug('reseting', key, reset[key]);
+        // this.$set(this.store, key, reset[key])
+        this.$set(this.store, key, reset[key])
+      });
+      this.$set(this.store.account, 'seed', undefined);
+      console.log('store after restore', this.store)
 
       // clean
       localStorage.removeItem('seed');

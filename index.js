@@ -14,11 +14,12 @@ const data = {
   store: {
     vue:          undefined,
     iota:         undefined,
-    status:       'insert your seed or generate one (not secure)',
+    status:       'insert / generate seed',
     account: {
       seed:       undefined,
     },
     messaging:    undefined,
+    channels:     undefined,
     current:      undefined,
     isSending:    false,
     reset:        undefined
@@ -38,8 +39,9 @@ const app = new Vue({
   created: async function() {
     console.debug('#app created');
 
-    // for latter logging out
-    this.store.reset = data;
+    // hard copy for latter logging out
+    this.store.reset = JSON.parse(JSON.stringify(data.store));
+    console.log(this.store.reset);
     this.store.vue = this;
 
     // TODO IOTA Service
@@ -88,7 +90,8 @@ const app = new Vue({
     }
   },
   watch: {
-    'store.account.seed': async function(seed) { try {
+    'store.account.seed': async function(seed, prev) { try {
+      console.debug(seed, prev, !!seed);
       if (!!seed) { /* TODO check seed */
         console.debug('detected new seed');
         localStorage.setItem('seed', seed);

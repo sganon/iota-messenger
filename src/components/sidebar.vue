@@ -24,11 +24,11 @@
         v-on:click="createChannel(mode)">
         create {{ mode }} channel
       </button>
-      <button v-on:click="fetchAll()">
+      <button v-on:click="fetchAll()" disabled>
         fetch all channels
       </button>
       <br>
-      <button v-on:click="test()">test</button>
+      <button v-on:click="test()" disabled>test</button>
     </div>
 
     <div id="status">
