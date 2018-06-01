@@ -24,23 +24,19 @@ class Messaging {
   async fetchChannels() { try {
     console.debug('data channel', this.data);
 
-    const channels = {
-      private:    { '0': this.data },
-      restricted: {},
-      public:     {}
-    };
-
     const channelIDs = this.data.messages.filter(
       message => message.type === 'channel'
     );
+    console.log(channelIDs);
 
-    channelIDs.map(async function(channelID) { try {
+    await Promise.all(channelIDs.map(async function(channelID) { try {
       console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
       const channel = await this._initChannel(channelID);
-      channels[channelID.mode][channelID.index] = channel;
-    } catch (e) { console.error(e) } }.bind(this));
+      this._storeChannel(channelID, channel);
+    } catch (e) { console.error(e) } }.bind(this)));
 
-    return channels;
+    console.log(this.channels);
+    return this.channels;
   } catch (e) { console.error(e) } }
 
   async createChannel(mode, sidekey) { try {
@@ -49,6 +45,7 @@ class Messaging {
     console.log(`creating ${mode} channel ${name} (${index})`);
     const channel = await this._initChannel({ index, mode, sidekey, name });
     this._addData({ type: 'channel', mode, sidekey, index, name });
+    this._storeChannel({ mode, index, name }, channel);
     return channel;
   } catch(e) { console.error(e) } }
 
@@ -59,16 +56,17 @@ class Messaging {
     );
     console.time('mam-create-message');
     const data    = this.iota.utils.toTrytes(JSON.stringify(packet));
-    console.log(this.channels)
+    console.log(this.channels);
     const message = Mam.create(this.channels[id.mode][id.index].state, data);
     console.timeEnd('mam-create-message');
 
-    console.time('mam-attaching')
+    console.time('mam-attaching');
     this.channels[id.mode][id.index].state = message.state;
     await Mam.attach(message.payload, message.address);
-    console.timeEnd('mam-attaching')
+    console.timeEnd('mam-attaching');
 
-    return message.root;
+    this._storeMessage(id, packet);
+    return packet;
   } catch(e) { console.error(e) } }
 
   /*

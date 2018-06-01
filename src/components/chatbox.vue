@@ -35,17 +35,19 @@ export default Vue.extend({
       const mode  = this.store.current.mode;
       const index = this.store.current.index;
       const input = document.querySelector('#message');
-      console.log(`sending message to ${mode} channel ${id}:`, input.value);
+      console.log(`sending message to ${mode} channel ${index}:`, input.value);
 
+      // TODO iota value
       const packet  = { text: input.value };
-      const message = this.store.messaging.send(packet, 0, this.store.current);
+      const message = await this.store.messaging.send(
+        packet, 0, this.store.current
+      );
+      this.store.channels[mode][index].messages.push(message);
 
       // reinit for next message
       input.value          = '';
-      this.store.status    = `OK`;
+      this.store.status    = 'OK';
       this.store.isSending = false
-
-      return message.root;
     },
     sendPayment: function() {
       const value = prompt('how much IOTA do you want to send ?');

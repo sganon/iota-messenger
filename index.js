@@ -54,7 +54,6 @@ const app = new Vue({
 
   },
   methods: {
-
     iotaInit: function() {
       return new Promise ((resolve, reject) => {
 
@@ -88,7 +87,6 @@ const app = new Vue({
     }
   },
   watch: {
-
     'store.account.seed': async function(seed) { try {
       if (!!seed) { /* TODO check seed */
         console.debug('detected new seed');
@@ -96,7 +94,6 @@ const app = new Vue({
         await this.startMessaging(seed);
       }
     } catch (e) { console.error(e) } },
-
     'store.channels': {
       handler: (current) => console.log('channels changed', current),
       deep: true

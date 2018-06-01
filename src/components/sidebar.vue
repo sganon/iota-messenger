@@ -9,7 +9,7 @@
       <div v-else v-for="mode in modes">
         <div v-if="Object.keys(store.channels[mode]).length">
           <h4>{{ mode }}</h4>
-          <a href=#
+          <a href=# class="channel"
             v-for="(channel, index) in store.channels[mode]"
             v-on:click="selectChannel(mode, index)">
             [ {{ index }} ] {{ channel.name }}
@@ -19,11 +19,10 @@
     </div>
 
     <div id="create-channel">
-      <button v-on:click="createChannel('restricted')">
-        create Restricted channel
-      </button>
-      <button v-on:click="createChannel('public')">
-        create Public channel
+      <button
+        v-for="mode in modes"
+        v-on:click="createChannel(mode)">
+        create {{ mode }} channel
       </button>
       <button v-on:click="fetchAll()">
         fetch all channels
@@ -56,8 +55,11 @@ export default Vue.extend({
       let sidekey = null;
       if (mode === 'restricted')
         sidekey = prompt('Please insert a passphrase to restrict your channel');
-        console.log(mode, sidekey)
-      this.store.channels = await this.store.messaging.createChannel(mode, sidekey);
+      this.store.status = `creating ${mode} channel...`
+      const channel = await this.store.messaging.createChannel(mode, sidekey);
+      const index = this.store.messaging.data.messages.slice(-1)[0].index;
+      this.store.channels[mode][index] = channel;
+      this.store.status = `OK`
     } catch (e) { console.error(e) } },
     test: function() {
       console.log(this.store.channels.public);
@@ -87,6 +89,10 @@ export default Vue.extend({
 
 #sidebar #channels {
   flex-grow: 1;
+}
+
+#sidebar .channel {
+  display: block;
 }
 
 #sidebar #status {
