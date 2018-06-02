@@ -6,7 +6,7 @@
   "author": "Pierre-Alexis Ciavaldini <pierre-alexis@ciavaldini.fr>",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=dev webpack-dev-server --config webpack.dev.js",
+    "start": "NODE_ENV=dev concurrently --kill-others \"webpack-dev-server --config webpack.dev.js\" \"nodemon proxy/\"",
     "tslint": "tslint --project ./tslint.json",
     "test": "karma start karma.conf.js --single-run"
   },
@@ -20,6 +20,8 @@
     "mam.client": "io-studio/mam.client.js",
     "node-sass": "^4.9.0",
     "vue": "^2.5.16",
+    "websocket": "^1.0.26",
+    "zeromq": "^4.6.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.0.0-beta.49",
@@ -38,6 +40,7 @@
     "karma-spec-reporter": "^0.0.32",
     "karma-webpack": "^3.0.0",
     "mocha": "^5.2.0",
+    "nodemon": "^1.17.5",
     "sass-bulk-import-loader": "^0.1.1",
     "sass-loader": "^7.0.1",
     "sinon": "^5.0.10",
