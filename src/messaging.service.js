@@ -1,5 +1,6 @@
 const Mam = require('mam.client');
 const WebSocketClient = require('websocket').w3cwebsocket;
+
 class Messaging {
 
   constructor(iota, seed, set) {
@@ -20,6 +21,7 @@ class Messaging {
       this.dataID = { index: 0, mode: 'private', name: 'data' };
       this.data = await this._initChannel(this.dataID);
       this._storeChannel(this.dataID, this.data);
+      console.debug('data channel next root', this.data.nextRoot);
 
       // Initiate connection to ws proxy for zmq.
       this.wsClient = new WebSocketClient('ws://localhost:1337', 'echo-protocol');
@@ -37,7 +39,15 @@ class Messaging {
       // Function handling zmq response via ws proxy.
       this.wsClient.onmessage = (e) => {
         if (typeof e.data === 'string') {
-          console.log("Received: '" + e.data + "'");
+          // console.log("Received: " + e.data);
+          const payload = e.data.split(',');
+          if (payload[0] === 'tx') {
+            console.log('receiving data from ws proxy');
+            // console.log('nextRoot is:', this.data.nextRoot);
+            if (payload.indexOf(this.data.nextRoot) != -1) {
+              console.log('found one yeah:', payload, nextRoot)
+            }
+          }
         }
       };
 
