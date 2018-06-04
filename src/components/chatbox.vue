@@ -64,7 +64,7 @@ export default Vue.extend({
 <style lang="scss">
 
 #chatbox {
-  background-color: #d8d8d8;
+  background-color: #FFF;
   position: fixed;
   right: 0;
   bottom: 0;

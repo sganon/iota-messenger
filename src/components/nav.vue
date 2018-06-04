@@ -42,7 +42,9 @@
       <div id="seed" v-else>
         {{ store.account.seed }}
       </div>
-      <button v-on:click="logout()">logout</button>      
+      <a href="#" v-on:click="logout()" class="logout">
+        Logout
+      </a>      
     </div>
 
     <!--
@@ -115,6 +117,23 @@ export default Vue.extend({
   align-items: center;
   padding: 0 20px 0 20px;
 
+  .logout {
+    transition: all ease-in 0.5s;
+    text-decoration: none;
+    padding: 1em;
+    margin-left: 2em;
+    border: 1px solid #18817c;
+    color: #18817c;
+    border-radius: 5px;
+
+    &:hover {
+      cursor: pointer;
+      background: linear-gradient(210deg,#22b1ab,#18817c);
+      color: #FFF;
+      border-color: #FFF;
+    }
+  }
+
   #logo {
     display: flex;
     align-items: center;
@@ -133,10 +152,10 @@ export default Vue.extend({
     justify-content: flex-end;
 
     #seed {
-      overflow:hidden; 
-      white-space:nowrap; 
-      text-overflow: ellipsis;
-      width: 60%;
+      // overflow:hidden; 
+      // white-space:nowrap; 
+      // text-overflow: ellipsis;
+      // width: 60%;
     }
   }
 
