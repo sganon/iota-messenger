@@ -17,8 +17,8 @@ class Messaging {
   async init() { try {
     console.debug('initializing private data channel');
     this.dataID = { index: 0, mode: 'private', name: 'data' };
-    this.data = await this._initChannel(this.dataID);
-    this._storeChannel(this.dataID, this.data);
+    this.data = await this.initChannel(this.dataID);
+    this.storeChannel(this.dataID, this.data);
     return this.channels;
   } catch (e) { console.error(e) } }
 
@@ -31,8 +31,8 @@ class Messaging {
 
     await Promise.all(channelIDs.map(async function(channelID) { try {
       console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
-      const channel = await this._initChannel(channelID);
-      this._storeChannel(channelID, channel);
+      const channel = await this.initChannel(channelID);
+      this.storeChannel(channelID, channel);
     } catch (e) { console.error(e) } }.bind(this)));
 
     return this.channels;
@@ -42,9 +42,9 @@ class Messaging {
     const name  = prompt('enter a name for this channel');
     const index = this._generateID(mode);
     console.log(`creating ${mode} channel ${name} (${index})`);
-    const channel = await this._initChannel({ index, mode, sidekey, name });
+    const channel = await this.initChannel({ index, mode, sidekey, name });
     this._addData({ type: 'channel', mode, sidekey, index, name });
-    this._storeChannel({ mode, index, name }, channel);
+    this.storeChannel({ mode, index, name }, channel);
     return channel;
   } catch(e) { console.error(e) } }
 
@@ -67,26 +67,7 @@ class Messaging {
     return packet;
   } catch(e) { console.error(e) } }
 
-  /*
-  _getThread(id, mode) {
-    return this.channels[mode][id];
-  }
-  */
-
-  _generateID(mode) {
-    const max = 999999;
-    let index;
-    do {
-      index = Math.floor(Math.random() * (max - 1))
-    } while (this.channels[mode][index]);
-    return index;
-  }
-
-  async _addData(data) { try {
-    await this.send(data, 0, this.dataID);
-  } catch (e) { console.error(e) } }
-
-  async _initChannel(channelID) { try {
+  async initChannel(channelID) { try {
     console.debug(
       `${channelID.mode} channel ${channelID.name} (${channelID.index}) init`
     );
@@ -125,6 +106,31 @@ class Messaging {
     });
     */
   } catch(e) { console.error(e) } }
+  
+  storeChannel(channelID, channel) {
+    // this.channels[channelID.mode][channelID.index] = channel;
+    this.set(this.channels[channelID.mode], channelID.index, channel);
+    console.debug(`stored ${channelID.mode} channel ${channelID.name}`);
+  }
+
+  /*
+  _getThread(id, mode) {
+    return this.channels[mode][id];
+  }
+  */
+
+  _generateID(mode) {
+    const max = 999999;
+    let index;
+    do {
+      index = Math.floor(Math.random() * (max - 1))
+    } while (this.channels[mode][index]);
+    return index;
+  }
+
+  async _addData(data) { try {
+    await this.send(data, 0, this.dataID);
+  } catch (e) { console.error(e) } }
 
   _deriveAddress(seed, index) {
     return new Promise(function(resolve, reject) {
@@ -142,12 +148,6 @@ class Messaging {
 
   _extractMessage(trytes) {
     return JSON.parse(this.iota.utils.fromTrytes(trytes));
-  }
-
-  _storeChannel(channelID, channel) {
-    // this.channels[channelID.mode][channelID.index] = channel;
-    this.set(this.channels[channelID.mode], channelID.index, channel);
-    console.debug(`stored ${channelID.mode} channel ${channelID.name}`);
   }
 
   _storeMessage(channelID, message) {

@@ -60,8 +60,8 @@ export default Vue.extend({
       const channelID = { mode, index };
       this.store.status   = "loading channel...";
       if (!this.store.channels[mode][index]) {
-        const channel = await this.store.messaging._initChannel(channelID);
-        this.store.messaging._storeChannel(channelID, channel);
+        const channel = await this.store.messaging.initChannel(channelID);
+        this.store.messaging.storeChannel(channelID, channel);
       }
       this.store.status   = "OK";      
       this.store.current = channelID;
