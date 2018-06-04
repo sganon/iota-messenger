@@ -3,7 +3,9 @@
 
     <textarea
       id="message"
-      :disabled="!store.current || store.isSending">
+      :disabled="!store.current || store.isSending"
+      v-on:keyup="keyMonitor"
+    >
     </textarea>
 
     <div id="send">
@@ -55,6 +57,11 @@ export default Vue.extend({
         console.log(`send ${value} IOTA`);
       } else {
         alert('insufficient balance');
+      }
+    },
+    keyMonitor: function(e) {
+      if (e.code === 'Enter') {
+        this.sendMessage();
       }
     }
   }
