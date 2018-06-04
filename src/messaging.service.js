@@ -1,93 +1,112 @@
 const Mam = require('mam.client');
-const zmq = require('zeromq').socket('sub');
+const WebSocketClient = require('websocket').w3cwebsocket;
 
 class Messaging {
 
   constructor(iota, seed, set) {
     console.debug('building Messaging object');
-    this.iota      = iota;
-    this.seed      = seed;
-    this.set       = set;
-    this.channels  = {
-      private:    {},
+    this.iota = iota;
+    this.seed = seed;
+    this.set = set;
+    this.channels = {
+      private: {},
       restricted: {},
-      public:     {}
+      public: {}
     };
   }
 
-  async init() { try {
-    console.debug('initializing private data channel');
-    this.dataID = { index: 0, mode: 'private', name: 'data' };
-    this.data = await this._initChannel(this.dataID);
-    this._storeChannel(this.dataID, this.data);
-    return this.channels;
-  } catch (e) { console.error(e) } }
+  async init() {
+    try {
+      console.debug('initializing private data channel');
+      this.dataID = { index: 0, mode: 'private', name: 'data' };
+      this.data = await this._initChannel(this.dataID);
+      this._storeChannel(this.dataID, this.data);
+      console.debug('data channel next root', this.data.nextRoot);
 
-  initZMQ() {
-    const url = 'tcp://node.iota-tangle.io:5556';
-    zmq.connect(url);
+      // Initiate connection to ws proxy for zmq.
+      this.wsClient = new WebSocketClient('ws://localhost:1337', 'echo-protocol');
+      this.wsClient.onerror = () => {
+        console.error('Connection Error');
+      };
+      this.wsClient.onopen = () => {
+        console.debug('WebSocket Client Connected');
+      };
 
-    zmq.subscribe('tx')  /* newly seen transactions */
-    zmq.subscribe('sn')  /* newly confirmed transactions */
-    zmq.subscribe('lmi') /* latest milestone index */
+      this.wsClient.onclose = () => {
+        console.debug('echo-protocol Client Closed');
+      };
 
-    zmq.on('message', msg => {
-      const data = msg.toString().split(' ');
-      switch (data[0]) {
-        case 'tx':
-          console.log('received tx', data);
-        case 'sn':
-          console.log('received sn', data);
-        case 'lmi':
-          console.log('received lmi', data);
-      }
-    });
+      // Function handling zmq response via ws proxy.
+      this.wsClient.onmessage = (e) => {
+        if (typeof e.data === 'string') {
+          // console.log("Received: " + e.data);
+          const payload = e.data.split(',');
+          if (payload[0] === 'tx') {
+            console.log('receiving data from ws proxy');
+            // console.log('nextRoot is:', this.data.nextRoot);
+            if (payload.indexOf(this.data.nextRoot) != -1) {
+              console.log('found one yeah:', payload, nextRoot)
+            }
+          }
+        }
+      };
+
+      return this.channels;
+    } catch (e) { console.error(e) }
   }
 
-  async fetchChannels() { try {
-    console.debug('data channel', this.data);
+  async fetchChannels() {
+    try {
+      console.debug('data channel', this.data);
 
-    const channelIDs = this.data.messages.filter(
-      message => message.type === 'channel'
-    );
+      const channelIDs = this.data.messages.filter(
+        message => message.type === 'channel'
+      );
 
-    await Promise.all(channelIDs.map(async function(channelID) { try {
-      console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
-      const channel = await this._initChannel(channelID);
-      this._storeChannel(channelID, channel);
-    } catch (e) { console.error(e) } }.bind(this)));
+      await Promise.all(channelIDs.map(async function (channelID) {
+        try {
+          console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
+          const channel = await this._initChannel(channelID);
+          this._storeChannel(channelID, channel);
+        } catch (e) { console.error(e) }
+      }.bind(this)));
 
-    return this.channels;
-  } catch (e) { console.error(e) } }
+      return this.channels;
+    } catch (e) { console.error(e) }
+  }
 
-  async createChannel(mode, sidekey) { try {
-    const name  = prompt('enter a name for this channel');
-    const index = this._generateID(mode);
-    console.log(`creating ${mode} channel ${name} (${index})`);
-    const channel = await this._initChannel({ index, mode, sidekey, name });
-    this._addData({ type: 'channel', mode, sidekey, index, name });
-    this._storeChannel({ mode, index, name }, channel);
-    return channel;
-  } catch(e) { console.error(e) } }
+  async createChannel(mode, sidekey) {
+    try {
+      const name = prompt('enter a name for this channel');
+      const index = this._generateID(mode);
+      console.log(`creating ${mode} channel ${name} (${index})`);
+      const channel = await this._initChannel({ index, mode, sidekey, name });
+      this._addData({ type: 'channel', mode, sidekey, index, name });
+      this._storeChannel({ mode, index, name }, channel);
+      return channel;
+    } catch (e) { console.error(e) }
+  }
 
-  async send(packet, value, id) { try {
-    console.debug(
-      `sending message in ${id.mode} channel ${id.name} with ${value} IOTA`,
-      packet
-    );
-    console.time('mam-create-message');
-    const data    = this.iota.utils.toTrytes(JSON.stringify(packet));
-    const message = Mam.create(this.channels[id.mode][id.index].state, data);
-    console.timeEnd('mam-create-message');
+  async send(packet, value, id) {
+    try {
+      console.debug(
+        `sending message in ${id.mode} channel ${id.name} with ${value} IOTA`,
+        packet
+      );
+      console.time('mam-create-message');
+      const data = this.iota.utils.toTrytes(JSON.stringify(packet));
+      const message = Mam.create(this.channels[id.mode][id.index].state, data);
+      console.timeEnd('mam-create-message');
 
-    console.time('mam-attaching');
-    this.channels[id.mode][id.index].state = message.state;
-    await Mam.attach(message.payload, message.address);
-    console.timeEnd('mam-attaching');
+      console.time('mam-attaching');
+      this.channels[id.mode][id.index].state = message.state;
+      await Mam.attach(message.payload, message.address);
+      console.timeEnd('mam-attaching');
 
-    this._storeMessage(id, packet);
-    return packet;
-  } catch(e) { console.error(e) } }
+      this._storeMessage(id, packet);
+      return packet;
+    } catch (e) { console.error(e) }
+  }
 
   subscribe(mode, root, sidekey) {
     console.debug(`subscribing to ${mode} channel`, root);
@@ -108,52 +127,56 @@ class Messaging {
     return index;
   }
 
-  async _addData(data) { try {
-    await this.send(data, 0, this.dataID);
-  } catch (e) { console.error(e) } }
+  async _addData(data) {
+    try {
+      await this.send(data, 0, this.dataID);
+    } catch (e) { console.error(e) }
+  }
 
-  async _initChannel(channelID) { try {
-    console.debug(
-      `${channelID.mode} channel ${channelID.name} (${channelID.index}) init`
-    );
-    let channel = { name: channelID.name };
+  async _initChannel(channelID) {
+    try {
+      console.debug(
+        `${channelID.mode} channel ${channelID.name} (${channelID.index}) init`
+      );
+      let channel = { name: channelID.name };
 
-    // init MAM object to the right address and mode
-    const address = await this._deriveAddress(this.seed, channelID.index)
-    channel.state = Mam.init(this.iota, address);
-    if (channelID.mode !== 'public')
-      channel.state = Mam.changeMode(
-        channel.state,
+      // init MAM object to the right address and mode
+      const address = await this._deriveAddress(this.seed, channelID.index)
+      channel.state = Mam.init(this.iota, address);
+      if (channelID.mode !== 'public')
+        channel.state = Mam.changeMode(
+          channel.state,
+          channelID.mode,
+          channelID.sidekey
+        );
+
+      // fetch history
+      console.time(`fetched-${channelID.mode}-${channelID.index}`);
+      channel.root = Mam.getRoot(channel.state)
+      channel = Object.assign(channel, await Mam.fetch(
+        channel.root,
         channelID.mode,
         channelID.sidekey
+      ));
+      channel.messages = channel.messages.map(
+        message => this._extractMessage(message)
       );
+      // set message sending index to current thread length
+      channel.state.channel.start = channel.messages.length;
+      console.timeEnd(`fetched-${channelID.mode}-${channelID.index}`);
 
-    // fetch history
-    console.time(`fetched-${channelID.mode}-${channelID.index}`);
-    channel.root = Mam.getRoot(channel.state)
-    channel = Object.assign(channel, await Mam.fetch(
-      channel.root,
-      channelID.mode,
-      channelID.sidekey
-    ));
-    channel.messages = channel.messages.map(
-      message => this._extractMessage(message)
-    );
-    // set message sending index to current thread length
-    channel.state.channel.start = channel.messages.length;
-    console.timeEnd(`fetched-${channelID.mode}-${channelID.index}`);
-
-    return channel;
-    /*
-    Mam.fetch(Mam.getRoot(state), mode, sidekey, function(data) {
-      console.log(`received message on ${mode} channel ${id}: `, message);
-      this.store.channels[mode][id].messages.push(this.extractMessage(message));
-    });
-    */
-  } catch(e) { console.error(e) } }
+      return channel;
+      /*
+      Mam.fetch(Mam.getRoot(state), mode, sidekey, function(data) {
+        console.log(`received message on ${mode} channel ${id}: `, message);
+        this.store.channels[mode][id].messages.push(this.extractMessage(message));
+      });
+      */
+    } catch (e) { console.error(e) }
+  }
 
   _deriveAddress(seed, index) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       console.time(`iota-newaddress-${index}`);
       this.iota.api.getNewAddress(seed, { index }, (error, derived) => {
