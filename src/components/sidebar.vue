@@ -7,13 +7,22 @@
         No channels yet
       </div>
       <div v-else v-for="mode in modes">
-        <div v-if="Object.keys(store.channels[mode]).length">
+        <div v-if="modeHasChannels(mode)">
           <h4>{{ mode }}</h4>
-          <a href=# class="channel"
-            v-for="(channel, index) in store.channels[mode]"
-            v-on:click="selectChannel(mode, index)">
-            [ {{ index }} ] {{ channel.name }}
-          </a>
+          <div v-if="mode === 'private'">
+            <a href=# class="channel" v-on:click="selectChannel('private', 0)">
+              [0] {{store.channels[mode][0].name}}
+            </a>
+          </div>
+          <div v-for="(message, index) in store.messaging.data.messages">
+            <a
+              href=# class="channel"
+              v-if="message.type === 'channel' && message.mode === mode"
+              v-on:click="selectChannel(mode, index)"
+            >
+              [ {{ index }} ] {{message.index}}
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -46,9 +55,16 @@ export default Vue.extend({
     modes: ['private', 'restricted', 'public'],
   } },
   methods: {
-    selectChannel: function(mode, index) {
+    selectChannel: async function(mode, index) {
       console.debug(`selected ${mode} channel ${index}`);
-      this.store.current = { mode, index };
+      const channelID = { mode, index };
+      this.store.status   = "loading channel...";
+      if (!this.store.channels[mode][index]) {
+        const channel = await this.store.messaging._initChannel(channelID);
+        this.store.messaging._storeChannel(channelID, channel);
+      }
+      this.store.status   = "OK";      
+      this.store.current = channelID;
     },
     createChannel: async function(mode) { try {
       let sidekey = null;
@@ -62,10 +78,19 @@ export default Vue.extend({
     test: function() {
       console.log(this.store.channels.public);
       console.log(Object.keys(this.store.channels.public))
+    },
+    modeHasChannels: function(mode) {
+      let hasChannels = false;
+      this.store.messaging.data.messages.forEach(message => {
+        if (message.mode === mode && message.type === 'channel') {
+          hasChannels = true;
+        }
+      });
+      return hasChannels;
     }
   },
   mounted: function() {
-  }
+  },
 });
 </script>
 

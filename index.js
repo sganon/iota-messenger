@@ -80,8 +80,6 @@ const app = new Vue({
 
       this.store.status   = "opening messaging account...";
       this.store.channels = await messaging.init();
-      this.store.status   = "loading channels...";
-      await messaging.fetchChannels();
 
       this.store.status = "OK";
       console.timeEnd('messaging-init');
