@@ -17,25 +17,17 @@ class Messaging {
 
   async init() {
     try {
-      console.debug('initializing private data channel');
       this.dataID = { index: 0, mode: 'private', name: 'data' };
-      this.data = await this._initChannel(this.dataID);
-      this._storeChannel(this.dataID, this.data);
-      console.debug('data channel next root', this.data.nextRoot);
+      await this._initChannel(this.dataID);
+      this.data = await this.loadChannel(this.dataID);
+      this._initChannels();
 
+      // TODO move to ws init
       // Initiate connection to ws proxy for zmq.
       this.wsClient = new WebSocketClient('ws://localhost:1337', 'echo-protocol');
-      this.wsClient.onerror = () => {
-        console.error('Connection Error');
-      };
-      this.wsClient.onopen = () => {
-        console.debug('WebSocket Client Connected');
-      };
-
-      this.wsClient.onclose = () => {
-        console.debug('echo-protocol Client Closed');
-      };
-
+      this.wsClient.onerror = () => console.error('Connection Error');
+      this.wsClient.onopen  = () => console.debug('WebSocket Client Connected');
+      this.wsClient.onclose = () => console.debug('echo-protocol Client Closed');
       // Function handling zmq response via ws proxy.
       this.wsClient.onmessage = (e) => {
         if (typeof e.data === 'string') {
@@ -55,19 +47,22 @@ class Messaging {
     } catch (e) { console.error(e) }
   }
 
+  _initChannels() {
+    const channelIDs = this._getChannels();
+    channelIDs.map(channelID => {
+      console.log(channelID);
+      this._initChannel(channelID)});
+  }
+
   async fetchChannels() {
     try {
       console.debug('data channel', this.data);
 
-      const channelIDs = this.data.messages.filter(
-        message => message.type === 'channel'
-      );
-
+      const channelIDs = this._getChannels();
       await Promise.all(channelIDs.map(async function (channelID) {
         try {
           console.debug(`loading ${channelID.mode} channel ${channelID.name}`);
           const channel = await this._initChannel(channelID);
-          this._storeChannel(channelID, channel);
         } catch (e) { console.error(e) }
       }.bind(this)));
 
@@ -126,6 +121,12 @@ class Messaging {
   }
   */
 
+  _getChannels() {
+    return this.data.messages.filter(
+      message => message.type === 'channel'
+    );
+  }
+
   _getNextRoots() {
     const nextRoots = { private: [], restricted: [], public: [] };
     const modes = Object.keys(nextRoots);
@@ -156,36 +157,56 @@ class Messaging {
 
   async _initChannel(channelID) {
     try {
-      console.debug(
-        `${channelID.mode} channel ${channelID.name} (${channelID.index}) init`
-      );
+      console.log(`initializing ${channelID.mode} channel ${channelID.name}`);
       let channel = { name: channelID.name };
 
-      // init MAM object to the right address and mode
-      const address = await this._deriveAddress(this.seed, channelID.index)
-      channel.state = Mam.init(this.iota, address);
+      if (!channelID.address && channelID.index !== undefined)
+        channelID.address = await this._deriveAddress(this.seed, channelID.index);
+
+      channel.state = Mam.init(this.iota, channelID.address);
       if (channelID.mode !== 'public')
         channel.state = Mam.changeMode(
           channel.state,
           channelID.mode,
           channelID.sidekey
         );
+      channel.root = Mam.getRoot(channel.state)
 
+      channel.loaded = false;
+      this._storeChannel(channelID, channel);
+
+    } catch (e) { console.error(e) }
+  }
+
+  async loadChannel(channelID) {
+    try {
+      console.debug(
+        `loading ${channelID.mode} channel ${channelID.name} (${channelID.index})`
+      );
+
+      let channel = this._getChannel(channelID);
       // fetch history
       console.time(`fetched-${channelID.mode}-${channelID.index}`);
-      channel.root = Mam.getRoot(channel.state)
-      channel = Object.assign(channel, await Mam.fetch(
-        channel.root,
-        channelID.mode,
-        channelID.sidekey
-      ));
+      // channel = Object.assign(channel, await Mam.fetch(
+      this.channels[channelID.mode][channelID.index] = Object.assign(
+        { }, channel, await Mam.fetch(
+          channel.root,
+          channelID.mode,
+          channelID.sidekey
+        )
+      );
+      console.log(this.channels[channelID.mode][channelID.index]);
+      channel = this._getChannel(channelID);
       channel.messages = channel.messages.map(
         message => this._extractMessage(message)
       );
       // set message sending index to current thread length
       channel.state.channel.start = channel.messages.length;
       console.timeEnd(`fetched-${channelID.mode}-${channelID.index}`);
+      channel.loaded = true;
 
+      console.log(`loaded ${channelID.name}`, channel);
+      // this._storeChannel(channelID, channel);
       return channel;
       /*
       Mam.fetch(Mam.getRoot(state), mode, sidekey, function(data) {
@@ -215,13 +236,16 @@ class Messaging {
   }
 
   _storeChannel(channelID, channel) {
-    // this.channels[channelID.mode][channelID.index] = channel;
     this.set(this.channels[channelID.mode], channelID.index, channel);
     console.debug(`stored ${channelID.mode} channel ${channelID.name}`);
   }
 
   _storeMessage(channelID, message) {
     this.channels[channelID.mode][channelID.index].messages.push(message);
+  }
+
+  _getChannel(channelID) {
+    return this.channels[channelID.mode][channelID.index];
   }
 
 }

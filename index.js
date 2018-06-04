@@ -77,11 +77,10 @@ const app = new Vue({
       // TODO link channels from the start ?
       const messaging = new Messaging(this.iota, seed, this.$set);
       this.store.messaging = messaging;
+      this.store.channels = messaging.channels;
 
       this.store.status   = "opening messaging account...";
-      this.store.channels = await messaging.init();
-      this.store.status   = "loading channels...";
-      await messaging.fetchChannels();
+      await messaging.init();
 
       this.store.status = "OK";
       console.timeEnd('messaging-init');
@@ -90,7 +89,6 @@ const app = new Vue({
   },
   watch: {
     'store.account.seed': async function(seed, prev) { try {
-      console.debug(seed, prev, !!seed);
       if (!!seed) { /* TODO check seed */
         console.debug('detected new seed');
         localStorage.setItem('seed', seed);

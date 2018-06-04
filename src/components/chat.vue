@@ -4,6 +4,7 @@
     <div id="chat-nav">
       <div v-if="store.current">
         {{ store.current.mode }} channel {{ store.channels[store.current.mode][store.current.index].name }}
+        {{ store.channels[store.current.mode][store.current.index].loading ? 'loading...' : '' }}
         <button v-on:click="invite(store.current.mode)" v-if="store.current.mode !== 'private'">
           invite
         </button>
