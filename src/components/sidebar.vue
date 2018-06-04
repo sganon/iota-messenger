@@ -72,7 +72,7 @@ export default Vue.extend({
 <style lang="scss">
 
 #sidebar {
-  background-color: #c1c1c1;
+  background: linear-gradient(210deg,#22b1ab,#18817c);
   position: fixed;
   top: 100px;
   bottom: 0;

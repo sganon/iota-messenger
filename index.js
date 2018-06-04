@@ -1,7 +1,7 @@
 import Vue from 'vue';
 const IOTA = require('iota.lib.js');
 
-// import './assets/styles/main.scss';
+import './assets/styles/main.scss';
 
 import Messaging from './src/messaging.service.js'
 
