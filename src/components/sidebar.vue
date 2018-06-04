@@ -34,6 +34,15 @@
     </div>
 
     <div id="create-channel">
+      <div v-if="store.channels && Object.keys(store.channels[mode]).length === 0"
+        v-for="mode in modes">
+        <button v-on:click="createChannel(mode)">
+          create {{ mode }} channel
+        </button>
+        <button v-on:click="joinChannel(mode)">
+          join {{ mode }} channel
+        </button>
+      </div>
       <button v-on:click="fetchAll()" disabled>
         fetch all channels
       </button>

@@ -42,7 +42,7 @@ class Messaging {
           // console.log("Received: " + e.data);
           const payload = e.data.split(',');
           if (payload[0] === 'tx') {
-            console.log('receiving data from ws proxy');
+            // console.log('receiving data from ws proxy');
             // console.log('nextRoot is:', this.data.nextRoot);
             if (payload.indexOf(this.data.nextRoot) != -1) {
               console.log('found one yeah:', payload, nextRoot)
@@ -71,6 +71,7 @@ class Messaging {
         } catch (e) { console.error(e) }
       }.bind(this)));
 
+      // this._getNextRoots();
       return this.channels;
     } catch (e) { console.error(e) }
   }
@@ -112,11 +113,31 @@ class Messaging {
     console.debug(`subscribing to ${mode} channel`, root);
   }
 
+  async invite(id, root) {
+    try {
+      console.debug(`inviting user to ${mode} channel ${index}`, root);
+      await this.send({ type: 'join', root }, 0, id);
+    } catch(e) { console.error(e) }
+  }
+
   /*
   _getThread(id, mode) {
     return this.channels[mode][id];
   }
   */
+
+  _getNextRoots() {
+    const nextRoots = { private: [], restricted: [], public: [] };
+    const modes = Object.keys(nextRoots);
+    modes.map(mode => {
+      const channels = Object.keys(this.channels[mode]);
+      channels.map(channel => {
+        const messages = this.channels[mode][channel].messages;
+        nextRoots[mode].push(messages[messages.length - 1].nextRoot);
+      });
+    });
+    console.log(nextRoots);
+  }
 
   _generateID(mode) {
     const max = 999999;
