@@ -7,7 +7,7 @@
         No channels yet
       </div>
       <div v-else v-for="mode in modes">
-        <div v-if="Object.keys(store.channels[mode]).length">
+        <div v-if="Object.keys(store.channels[mode]).length > 0">
 
           <div class="mode-header">
             <h4>{{ mode }}</h4>
