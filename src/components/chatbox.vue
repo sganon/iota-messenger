@@ -73,9 +73,12 @@ export default Vue.extend({
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-right: 1em;
+  padding-left: 1em;
 }
 
 #message {
+  margin-right: 1rem;
   flex-grow: 2;
 }
 
