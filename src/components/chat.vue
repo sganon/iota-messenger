@@ -53,7 +53,7 @@ export default Vue.extend({
         this.store.channels[mode][id].root
       );
       const root = prompt(`now paste the participant's root:`);
-      this.messaging.invite(this.store.current, root);
+      this.store.messaging.invite(this.store.current, root);
     }
   }
 });

@@ -44,12 +44,14 @@ class Messaging {
   }
   */
 
-  async createChannel(mode, sidekey) { try {
+  async createChannel(mode, sidekey, write = true) { try {
     const name  = prompt('enter a name for this channel');
     const index = this._generateID(mode);
     console.debug(`creating ${mode} channel ${name} (${index})`);
     const id = await this._initChannel({ index, mode, sidekey, name });
-    this._addData({ type: 'channel', mode, sidekey, index, name });
+    if (write)
+      this._addData({ type: 'channel', mode, sidekey, index, name });
+    return id;
   } catch (e) { console.error(e) } }
 
   async send(packet, value, channelID) { try {
@@ -103,24 +105,31 @@ class Messaging {
     return channel;
   } catch (e) { console.error(e) } }
 
-  join(mode, root, sidekey) {
+  async join(mode, root, sidekey) { try {
     // TODO check address
     console.debug(`subscribing to ${mode} channel`, root);
-    this._initChannel({
-      name: 'joined',
-      mode,
-      root,
-      sidekey
-    });
+    const sendID = { mode, sidekey };
+    sendID.id = await this.createChannel(sendID.mode, sendID.sidekey, false);
+    const receiveID = { mode, root, sidekey };
+    receiveID.id = await this._initChannel(receiveID);
+    this._watchChannel(sendID, receiveID);
+    const send = this._getChannel(sendID);
+    prompt('give this root to the invitation sender', send.root);
+  } catch(e) { console.error(e) } }
+
+  _watchChannel(sendID, receiveID) {
+    console.log(sendID, receiveID);
+    this.channels[sendID.mode][sendID.id].watching.push(receiveID.root)
   }
 
-  async invite(channelID, address) { try {
+  async invite(channelID, root) { try {
     console.debug(
       `inviting user to ${channelID.mode} channel ${channelID.name}`,
-      address
+      root
     );
     // TODO check address
     // await this.send({ type: 'join', root }, 0, id);
+    this._initChannel({ mode: channelID.mode, name: channelID.name, root });
   } catch(e) { console.error(e) } }
 
   getChecksum(address) {
@@ -178,6 +187,7 @@ class Messaging {
       channel.root = channelID.root;
     }
 
+    channel.watching = [];
     channel.loaded = false;
     this._storeChannel(channelID, channel);
     console.debug('stored channel', channel);
