@@ -40,11 +40,14 @@
         </button>
       </div>
       <div id="seed" v-else>
-        {{ store.account.seed }}
+        {{ store.messaging.getChecksum(store.account.seed) }}
+        <a href="#" v-on:click="copySeed()" class="logout">
+          copy seed
+        </a>
+        <a href="#" v-on:click="logout()" class="logout">
+          Logout
+        </a>
       </div>
-      <a href="#" v-on:click="logout()" class="logout">
-        Logout
-      </a>      
     </div>
 
     <!--
@@ -80,6 +83,15 @@ export default Vue.extend({
       }
       // TODO check seed
       this.store.account.seed = seed;
+    },
+    copySeed: function() {
+      const input = document.createElement('input');
+      document.body.appendChild(input);
+      input.value = this.store.account.seed;
+      input.select();
+      document.execCommand('copy');
+      console.log('copied');
+      document.body.removeChild(input);
     },
     logout: function() {
       console.log('logging out');
@@ -136,7 +148,7 @@ export default Vue.extend({
   #logo {
     display: flex;
     align-items: center;
-    height: 100%;    
+    height: 100%;
 
     span {
       font-weight: 300;
@@ -146,13 +158,13 @@ export default Vue.extend({
 
   #menu {
     display: flex;
-    height: 100%;    
+    height: 100%;
     align-items: center;
     justify-content: flex-end;
 
     #seed {
-      // overflow:hidden; 
-      // white-space:nowrap; 
+      // overflow:hidden;
+      // white-space:nowrap;
       // text-overflow: ellipsis;
       // width: 60%;
     }

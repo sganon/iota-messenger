@@ -7,23 +7,63 @@
         No channels yet
       </div>
       <div v-else v-for="mode in modes">
-        <div v-if="Object.keys(store.channels[mode]).length">
-          <h4>{{ mode }}</h4>
+        <div v-if="Object.keys(store.channels[mode]).length > 0">
+
+          <div class="mode-header">
+            <h4>{{ mode }}</h4>
+            <div class="controls">
+              <button v-on:click="createChannel(mode)">
+                create
+              </button>
+              <button
+                v-if="mode !== 'private'"
+                v-on:click="joinChannel(mode)">
+                join
+              </button>
+            </div>
+          </div>
+
           <a href=# class="channel"
-            v-for="(channel, index) in store.channels[mode]"
-            v-on:click="selectChannel(mode, index)">
-            [ {{ index }} ] {{ channel.name }}
+            v-for="(channel, id) in store.channels[mode]"
+            v-on:click="selectChannel(mode, id)">
+            [ {{ id }} ] {{ channel.name }}
+            <br>
+            {{ channel.loaded ? 'loaded' : 'click to load' }} |
+            {{ channel.watching.length }} watching
           </a>
+
+        <!--
+        <div v-if="modeHasChannels(mode)">
+          <h4>{{ mode }}</h4>
+          <div v-if="mode === 'private'">
+            <a href=# class="channel" v-on:click="selectChannel('private', 0)">
+              [0] {{store.channels[mode][0].name}}
+            </a>
+          </div>
+          <div v-for="(message, index) in store.messaging.data.messages">
+            <a
+              href=# class="channel"
+              v-if="message.type === 'channel' && message.mode === mode"
+              v-on:click="selectChannel(mode, index)"
+            >
+              [ {{ index }} ] {{message.index}}
+            </a>
+          </div>
+        -->
         </div>
       </div>
     </div>
 
     <div id="create-channel">
-      <button
-        v-for="mode in modes"
-        v-on:click="createChannel(mode)">
-        create {{ mode }} channel
-      </button>
+      <div v-if="store.channels && Object.keys(store.channels[mode]).length === 0"
+        v-for="mode in modes">
+        <button v-on:click="createChannel(mode)">
+          create {{ mode }} channel
+        </button>
+        <button v-on:click="joinChannel(mode)">
+          join {{ mode }} channel
+        </button>
+      </div>
       <button v-on:click="fetchAll()" disabled>
         fetch all channels
       </button>
@@ -46,26 +86,43 @@ export default Vue.extend({
     modes: ['private', 'restricted', 'public'],
   } },
   methods: {
-    selectChannel: function(mode, index) {
-      console.debug(`selected ${mode} channel ${index}`);
-      this.store.current = { mode, index };
+    selectChannel: async function(mode, id) {
+      console.debug(`selected ${mode} channel ${id}`);
+      const channelID = { mode, id, name: this.store.channels[mode][id].name };
+      if (!this.store.channels[mode][id].loaded)
+        this.store.messaging.loadChannel(channelID);
+      this.store.current = channelID;
     },
     createChannel: async function(mode) { try {
       let sidekey = null;
       if (mode === 'restricted')
         sidekey = prompt('Please insert a passphrase to restrict your channel');
       this.store.status = `creating ${mode} channel...`
-      const channel = await this.store.messaging.createChannel(mode, sidekey);
-      const index = this.store.messaging.data.messages.slice(-1)[0].index;
+      await this.store.messaging.createChannel(mode, sidekey);
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
+    joinChannel: function(mode) {
+      const root = prompt(`root of the ${mode} channel:`);
+      const sidekey = mode === 'restricted' ? prompt('password:') : null;
+      this.store.messaging.join(mode, root, sidekey);
+    },
     test: function() {
       console.log(this.store.channels.public);
       console.log(Object.keys(this.store.channels.public))
+    },
+    modeHasChannels: function(mode) {
+      // TODO use store.channels
+      let hasChannels = false;
+      this.store.messaging.data.messages.forEach(message => {
+        if (message.mode === mode && message.type === 'channel') {
+          hasChannels = true;
+        }
+      });
+      return hasChannels;
     }
   },
   mounted: function() {
-  }
+  },
 });
 </script>
 
@@ -82,7 +139,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 #sidebar #channels {
@@ -91,7 +148,16 @@ export default Vue.extend({
 
 #sidebar .channel {
   display: block;
+  margin-bottom: 10px;
 }
+
+#sidebar .mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+#sideba
 
 #sidebar #status {
   margin-top: 20px;
