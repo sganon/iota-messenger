@@ -48,7 +48,11 @@ export default Vue.extend({
   methods: {
     invite: function(mode) {
       const id = this.store.current.id;
-      prompt(`To invite someone to this ${mode} channel, copy this root to your clipboard:`, this.store.channels[mode][id].root);
+      prompt(
+        `To invite someone to this ${mode} channel,
+        copy this address to your clipboard:`,
+        this.store.channels[mode][id].state.seed
+      );
       const root = prompt(`now paste the participant's root:`);
       this.messaging.invite(this.store.current, root);
     }

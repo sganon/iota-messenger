@@ -103,15 +103,21 @@ class Messaging {
     return channel;
   } catch (e) { console.error(e) } }
 
-  subscribe(mode, root, sidekey) {
-    // TODO check root (in messaging)
-    console.debug(`subscribing to ${mode} channel`, root);
+  join(mode, address, sidekey) {
+    // TODO check address
+    console.debug(`subscribing to ${mode} channel`, address);
+    this._initChannel({
+      name: 'joined',
+      mode,
+      address,
+      sidekey
+    });
   }
 
-  async invite(id, root) { try {
-    // TODO check root
-    console.debug(`inviting user to ${mode} channel ${index}`, root);
-    await this.send({ type: 'join', root }, 0, id);
+  async invite(id, address) { try {
+    // TODO check address
+    console.debug(`inviting user to ${mode} channel ${index}`, address);
+    // await this.send({ type: 'join', root }, 0, id);
   } catch(e) { console.error(e) } }
 
   getChecksum(address) {
