@@ -95,7 +95,7 @@ export default Vue.extend({
       if (mode === 'restricted')
         sidekey = prompt('Please insert a passphrase to restrict your channel');
       this.store.status = `creating ${mode} channel...`
-      const channel = await this.store.messaging.createChannel(mode, sidekey);
+      await this.store.messaging.createChannel(mode, sidekey);
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
     joinChannel: function(mode) {

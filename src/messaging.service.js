@@ -49,9 +49,7 @@ class Messaging {
 
   _initChannels() {
     const channelIDs = this._getChannels();
-    channelIDs.map(channelID => {
-      console.log(channelID);
-      this._initChannel(channelID)});
+    channelIDs.map(channelID => this._initChannel(channelID));
   }
 
   async fetchChannels() {
@@ -75,11 +73,9 @@ class Messaging {
     try {
       const name = prompt('enter a name for this channel');
       const index = this._generateID(mode);
-      console.log(`creating ${mode} channel ${name} (${index})`);
-      const channel = await this._initChannel({ index, mode, sidekey, name });
+      console.debug(`creating ${mode} channel ${name} (${index})`);
+      await this._initChannel({ index, mode, sidekey, name });
       this._addData({ type: 'channel', mode, sidekey, index, name });
-      this._storeChannel({ mode, index, name }, channel);
-      return channel;
     } catch (e) { console.error(e) }
   }
 
@@ -175,6 +171,7 @@ class Messaging {
       channel.loaded = false;
       this._storeChannel(channelID, channel);
 
+      return channel;
     } catch (e) { console.error(e) }
   }
 
