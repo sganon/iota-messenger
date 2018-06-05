@@ -3,8 +3,8 @@
 
     <div id="chat-nav">
       <div v-if="store.current">
-        {{ store.current.mode }} channel {{ store.channels[store.current.mode][store.current.index].name }}
-        {{ store.channels[store.current.mode][store.current.index].loading ? 'loading...' : '' }}
+        {{ store.current.mode }} channel {{ store.channels[store.current.mode][store.current.id].name }}
+        {{ store.channels[store.current.mode][store.current.id].loading ? 'loading...' : '' }}
         <button v-on:click="invite(store.current.mode)" v-if="store.current.mode !== 'private'">
           invite
         </button>
@@ -13,14 +13,14 @@
 
     <div v-if="store.current">
 
-      <div v-for="message in store.channels[store.current.mode][store.current.index].messages">
+      <div v-for="message in store.channels[store.current.mode][store.current.id].messages">
 
         <div v-if="message.text">
           - {{ message.text }}
         </div>
 
         <div v-else-if="message.type === 'channel'">
-          - saved {{ message.mode }} channel "{{ message.name }}" ({{ message.index }})
+          - saved {{ message.mode }} channel "{{ message.name }}" ({{ message.index || message.address }})
             {{ message.sidekey ? `and pass "${message.sidekey}"` : '' }}
         </div>
 
@@ -47,8 +47,8 @@ export default Vue.extend({
   }},
   methods: {
     invite: function(mode) {
-      const index = this.store.current.index;
-      prompt(`To invite someone to this ${mode} channel, copy this root to your clipboard:`, this.store.channels[mode][index].root);
+      const id = this.store.current.id;
+      prompt(`To invite someone to this ${mode} channel, copy this root to your clipboard:`, this.store.channels[mode][id].root);
       const root = prompt(`now paste the participant's root:`);
       this.messaging.invite(this.store.current, root);
     }

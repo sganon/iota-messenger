@@ -17,7 +17,7 @@ class Messaging {
 
   async init() { try {
     this.dataID = { index: 0, mode: 'private', name: 'data' };
-    await this._initChannel(this.dataID);
+    this.dataID.id = await this._initChannel(this.dataID);
     this.data = await this.loadChannel(this.dataID);
     this._initChannels();
     this._initWS();
@@ -48,37 +48,41 @@ class Messaging {
     const name  = prompt('enter a name for this channel');
     const index = this._generateID(mode);
     console.debug(`creating ${mode} channel ${name} (${index})`);
-    await this._initChannel({ index, mode, sidekey, name });
+    const id = await this._initChannel({ index, mode, sidekey, name });
     this._addData({ type: 'channel', mode, sidekey, index, name });
   } catch (e) { console.error(e) } }
 
-  async send(packet, value, id) { try {
+  async send(packet, value, channelID) { try {
     console.debug(
-      `sending message in ${id.mode} channel ${id.name} with ${value} IOTA`,
+      `sending message in ${channelID.mode} channel ${channelID.name}
+      with ${value} IOTA`,
       packet
     );
     console.time('mam-create-message');
     const data = this.iota.utils.toTrytes(JSON.stringify(packet));
-    const message = Mam.create(this.channels[id.mode][id.index].state, data);
+    const message = Mam.create(
+      this.channels[channelID.mode][channelID.id].state,
+      data
+    );
     console.timeEnd('mam-create-message');
 
     console.time('mam-attaching');
-    this.channels[id.mode][id.index].state = message.state;
+    this.channels[channelID.mode][channelID.id].state = message.state;
     await Mam.attach(message.payload, message.address);
     console.timeEnd('mam-attaching');
 
-    this._storeMessage(id, packet);
+    this._storeMessage(channelID, packet);
     return packet;
   } catch (e) { console.error(e) } }
 
   async loadChannel(channelID) { try {
     console.debug(
-      `loading ${channelID.mode} channel ${channelID.name} (${channelID.index})`
+      `loading ${channelID.mode} channel ${channelID.name} (${channelID.id})`
     );
     let channel = this._getChannel(channelID);
 
-    console.time(`loaded-${channelID.mode}-${channelID.index}`);
-    this.channels[channelID.mode][channelID.index] = Object.assign(
+    console.time(`loaded-${channelID.mode}-${channelID.id}`);
+    this.channels[channelID.mode][channelID.id] = Object.assign(
       { }, channel, await Mam.fetch(
         channel.root,
         channelID.mode,
@@ -94,7 +98,7 @@ class Messaging {
     // set message sending index to current thread length
     channel.state.channel.start = channel.messages.length;
     channel.loaded = true;
-    console.timeEnd(`loaded-${channelID.mode}-${channelID.index}`);
+    console.timeEnd(`loaded-${channelID.mode}-${channelID.id}`);
 
     return channel;
   } catch (e) { console.error(e) } }
@@ -136,6 +140,11 @@ class Messaging {
   }
   */
 
+  /*
+  ** _initChannel
+  ** channelID
+  **   mode, name, [index], [root]
+  */
   async _initChannel(channelID) { try {
     console.log(`initializing ${channelID.mode} channel ${channelID.name}`);
     let channel = { name: channelID.name };
@@ -154,8 +163,9 @@ class Messaging {
 
     channel.loaded = false;
     this._storeChannel(channelID, channel);
+    console.debug('stored channel', channel);
 
-    return channel;
+    return this.getChecksum(channel.root);
   } catch (e) { console.error(e) } }
 
   _getChannels() {
@@ -195,17 +205,18 @@ class Messaging {
   }
 
   _storeChannel(channelID, channel) {
-    const id = this.getChecksum(channelID.address);
+    const id = this.getChecksum(channel.root);
     this.set(this.channels[channelID.mode], id, channel);
     console.debug(`stored ${channelID.mode} channel ${channelID.name}`);
   }
 
   _storeMessage(channelID, message) {
-    this.channels[channelID.mode][channelID.index].messages.push(message);
+    this.channels[channelID.mode][channelID.id].messages.push(message);
   }
 
   _getChannel(channelID) {
-    return this.channels[channelID.mode][channelID.index];
+    console.debug('getting channel', channelID);
+    return this.channels[channelID.mode][channelID.id];
   }
 
   _initWS() {

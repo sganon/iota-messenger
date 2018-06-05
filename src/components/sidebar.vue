@@ -24,9 +24,9 @@
           </div>
 
           <a href=# class="channel"
-            v-for="(channel, index) in store.channels[mode]"
-            v-on:click="selectChannel(mode, index)">
-            [ {{ index }} ] {{ channel.name }} ({{ channel.loaded ? 'loaded' : 'no' }})
+            v-for="(channel, id) in store.channels[mode]"
+            v-on:click="selectChannel(mode, id)">
+            [ {{ id }} ] {{ channel.name }} ({{ channel.loaded ? 'loaded' : 'no' }})
           </a>
 
         <!--
@@ -83,10 +83,10 @@ export default Vue.extend({
     modes: ['private', 'restricted', 'public'],
   } },
   methods: {
-    selectChannel: async function(mode, index) {
-      console.debug(`selected ${mode} channel ${index}`);
-      const channelID = { mode, index };
-      if (!this.store.channels[mode][index].loaded)
+    selectChannel: async function(mode, id) {
+      console.debug(`selected ${mode} channel ${id}`);
+      const channelID = { mode, id, name: this.store.channels[mode][id].name };
+      if (!this.store.channels[mode][id].loaded)
         this.store.messaging.loadChannel(channelID);
       this.store.current = channelID;
     },
