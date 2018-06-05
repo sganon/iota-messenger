@@ -103,20 +103,23 @@ class Messaging {
     return channel;
   } catch (e) { console.error(e) } }
 
-  join(mode, address, sidekey) {
+  join(mode, root, sidekey) {
     // TODO check address
-    console.debug(`subscribing to ${mode} channel`, address);
+    console.debug(`subscribing to ${mode} channel`, root);
     this._initChannel({
       name: 'joined',
       mode,
-      address,
+      root,
       sidekey
     });
   }
 
-  async invite(id, address) { try {
+  async invite(channelID, address) { try {
+    console.debug(
+      `inviting user to ${channelID.mode} channel ${channelID.name}`,
+      address
+    );
     // TODO check address
-    console.debug(`inviting user to ${mode} channel ${index}`, address);
     // await this.send({ type: 'join', root }, 0, id);
   } catch(e) { console.error(e) } }
 
@@ -155,17 +158,25 @@ class Messaging {
     console.log(`initializing ${channelID.mode} channel ${channelID.name}`);
     let channel = { name: channelID.name };
 
-    if (!channelID.address && channelID.index !== undefined)
-      channelID.address = await this._deriveAddress(this.seed, channelID.index);
+    let root = true;
+    if (!channelID.address && channelID.index !== undefined) {
+      channelID.root = await this._deriveAddress(this.seed, channelID.index);
+      root = false;
+    }
 
-    channel.state = Mam.init(this.iota, channelID.address);
+    channel.state = Mam.init(this.iota, channelID.root);
     if (channelID.mode !== 'public')
       channel.state = Mam.changeMode(
         channel.state,
         channelID.mode,
         channelID.sidekey
       );
-    channel.root = Mam.getRoot(channel.state)
+
+    if (!root) {
+      channel.root = Mam.getRoot(channel.state)
+    } else {
+      channel.root = channelID.root;
+    }
 
     channel.loaded = false;
     this._storeChannel(channelID, channel);
@@ -211,6 +222,7 @@ class Messaging {
   }
 
   _storeChannel(channelID, channel) {
+    console.log(channelID, channel);
     const id = this.getChecksum(channel.root);
     this.set(this.channels[channelID.mode], id, channel);
     console.debug(`stored ${channelID.mode} channel ${channelID.name}`);

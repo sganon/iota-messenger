@@ -99,9 +99,9 @@ export default Vue.extend({
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
     joinChannel: function(mode) {
-      const address = prompt(`address of the ${mode} channel:`);
+      const root = prompt(`root of the ${mode} channel:`);
       const sidekey = mode === 'restricted' ? prompt('password:') : null;
-      this.store.messaging.join(mode, address, sidekey);
+      this.store.messaging.join(mode, root, sidekey);
     },
     test: function() {
       console.log(this.store.channels.public);
