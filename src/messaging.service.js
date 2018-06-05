@@ -101,14 +101,21 @@ class Messaging {
   }
 
   subscribe(mode, root, sidekey) {
+    // TODO check root (in messaging)
     console.debug(`subscribing to ${mode} channel`, root);
   }
 
   async invite(id, root) {
     try {
+      // TODO check root
       console.debug(`inviting user to ${mode} channel ${index}`, root);
       await this.send({ type: 'join', root }, 0, id);
     } catch(e) { console.error(e) }
+  }
+
+  getChecksum(address) {
+    const checkedAddress = this.iota.utils.addChecksum(address)
+    return checkedAddress.substr(checkedAddress.length - 9);
   }
 
   /*

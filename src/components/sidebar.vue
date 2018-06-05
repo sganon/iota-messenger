@@ -99,10 +99,9 @@ export default Vue.extend({
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
     joinChannel: function(mode) {
-      // TODO check root (in messaging)
       const root = prompt(`address of the ${mode} room:`);
-      const pass = mode === 'restricted' ? prompt('password:') : null;
-      this.store.messaging.subscribe(mode, root, pass);
+      const sidekey = mode === 'restricted' ? prompt('password:') : null;
+      this.store.messaging.subscribe(mode, root, sidekey);
     },
     test: function() {
       console.log(this.store.channels.public);
