@@ -25,11 +25,13 @@
 
           <a href=# class="channel"
             v-for="(channel, id) in store.channels[mode]"
-            v-on:click="selectChannel(mode, id)">
+            v-on:click="selectChannel(mode, id)"
+            v-if="!store.slaves.includes(id)"
+            >
             [ {{ id }} ] {{ channel.name }}
             <br>
-            {{ channel.loaded ? 'loaded' : 'click to load' }} |
-            {{ channel.watching.length }} watching
+            {{ channel.loaded ? `${channel.watching.length} joined` : 'click to load' }}
+
           </a>
 
         <!--
@@ -84,6 +86,7 @@ export default Vue.extend({
   props: ['store'],
   data: function() { return {
     modes: ['private', 'restricted', 'public'],
+    slaves: []
   } },
   methods: {
     selectChannel: async function(mode, id) {
@@ -101,11 +104,16 @@ export default Vue.extend({
       await this.store.messaging.createChannel(mode, sidekey);
       this.store.status = `OK`
     } catch (e) { console.error(e) } },
-    joinChannel: function(mode) {
+
+    joinChannel: async function(mode) { try {
       const root = prompt(`root of the ${mode} channel:`);
       const sidekey = mode === 'restricted' ? prompt('password:') : null;
-      this.store.messaging.join(mode, root, sidekey);
-    },
+      const id = this.store.messaging.getChecksum(root);
+      this.store.status = `joining ${mode} channel ${id}...`;
+      await this.store.messaging.join(mode, root, sidekey);
+      this.store.status = 'OK';
+    } catch (e) { console.error(e) } },
+
     test: function() {
       console.log(this.store.channels.public);
       console.log(Object.keys(this.store.channels.public))

@@ -8,6 +8,8 @@ class Messaging {
     this.iota     = iota;
     this.seed     = seed;
     this.set      = set;
+    this.masters  = [];
+    this.slaves   = [];
     this.channels = {
       private:    {},
       restricted: {},
@@ -44,13 +46,12 @@ class Messaging {
   }
   */
 
-  async createChannel(mode, sidekey, write = true) { try {
+  async createChannel(mode, sidekey) { try {
     const name  = prompt('enter a name for this channel');
     const index = this._generateID(mode);
     console.debug(`creating ${mode} channel ${name} (${index})`);
     const id = await this._initChannel({ index, mode, sidekey, name });
-    if (write)
-      this._addData({ type: 'channel', mode, sidekey, index, name });
+    this._addData({ type: 'channel', mode, sidekey, index, name });
     return id;
   } catch (e) { console.error(e) } }
 
@@ -94,9 +95,26 @@ class Messaging {
 
     // TODO broken logic ?
     channel = this._getChannel(channelID);
+
     channel.messages = channel.messages.map(
-      message => this._extractMessage(message)
-    );
+      message => {
+        message = this._extractMessage(message);
+        if (message.type === 'join') {
+          const id = this.getChecksum(message.root);
+          if (this.masters.includes(id)) return ;
+          this.slaves.push(id);
+          const slaveID = {
+            mode: channelID.mode,
+            name: channelID.name,
+            root: message.root,
+            id
+          };
+          this._initChannel(slaveID).then(() => this.loadChannel(slaveID));
+          this.channels[channelID.mode][channelID.id].watching.push(this.getChecksum(message.root));
+        }
+        return message;
+      }
+    ).filter(x => x);
     // set message sending index to current thread length
     channel.state.channel.start = channel.messages.length;
     channel.loaded = true;
@@ -108,19 +126,24 @@ class Messaging {
   async join(mode, root, sidekey) { try {
     // TODO check address
     console.debug(`subscribing to ${mode} channel`, root);
+
     const sendID = { mode, sidekey };
-    sendID.id = await this.createChannel(sendID.mode, sendID.sidekey, false);
+    sendID.id = await this.createChannel(sendID.mode, sendID.sidekey);
+
     const receiveID = { mode, root, sidekey };
     receiveID.id = await this._initChannel(receiveID);
+
     this._watchChannel(sendID, receiveID);
+
     const send = this._getChannel(sendID);
     prompt('give this root to the invitation sender', send.root);
   } catch(e) { console.error(e) } }
 
-  _watchChannel(sendID, receiveID) {
+  async _watchChannel(sendID, receiveID) { try {
     console.log(sendID, receiveID);
     this.channels[sendID.mode][sendID.id].watching.push(receiveID.root)
-  }
+    await this.send({ type: 'join', root: receiveID.root }, 0, sendID);
+  } catch(e) { console.error(e) } }
 
   async invite(channelID, root) { try {
     console.debug(
@@ -128,11 +151,10 @@ class Messaging {
       root
     );
     // TODO check address
-    await this.send({ type: 'join', root }, 0, channelID);
+    this._watchChannel(channelID, { root });
     await this._initChannel(
       { mode: channelID.mode, name: channelID.name, root }
     );
-    this.channels[channelID.mode][channelID.id].watching.push(root);
   } catch(e) { console.error(e) } }
 
   getChecksum(address) {
@@ -185,7 +207,8 @@ class Messaging {
       );
 
     if (!root) {
-      channel.root = Mam.getRoot(channel.state)
+      channel.root = Mam.getRoot(channel.state);
+      this.masters.push(this.getChecksum(channel.root));
     } else {
       channel.root = channelID.root;
     }
@@ -231,11 +254,11 @@ class Messaging {
   }.bind(this)); }
 
   _extractMessage(trytes) {
-    return JSON.parse(this.iota.utils.fromTrytes(trytes));
+    const message = JSON.parse(this.iota.utils.fromTrytes(trytes));
+    return message;
   }
 
   _storeChannel(channelID, channel) {
-    console.log(channelID, channel);
     const id = this.getChecksum(channel.root);
     this.set(this.channels[channelID.mode], id, channel);
     console.debug(`stored ${channelID.mode} channel ${channelID.name}`);

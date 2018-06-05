@@ -3,9 +3,11 @@
 
     <div id="chat-nav">
       <div v-if="store.current">
-        {{ store.current.mode }} channel {{ store.channels[store.current.mode][store.current.id].name }}
-        {{ store.channels[store.current.mode][store.current.id].loading ? 'loading...' : '' }}
-        <button v-on:click="invite(store.current.mode)" v-if="store.current.mode !== 'private'">
+        {{ store.current.mode }} channel
+        {{ store.channels[store.current.mode][store.current.id].name }}
+        <button
+          v-on:click="invite(store.current.mode)"
+          v-if="store.current.mode !== 'private'">
           invite
         </button>
       </div>
@@ -35,6 +37,21 @@
         </div>
 
       </div>
+
+      <div v-for="participant in store.channels[store.current.mode][store.current.id].watching">
+        <div v-for="message in store.channels[store.current.mode][participant].messages">
+
+          <div v-if="message.type === 'message'">
+            - {{ message.text }}
+          </div>
+
+          <div v-else>
+            - {{ JSON.stringify(message) }}
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
     <div v-else>
@@ -52,15 +69,19 @@ export default Vue.extend({
     messages: [],
   }},
   methods: {
-    invite: function(mode) {
+    invite: async function(mode) { try {
       const id = this.store.current.id;
       prompt(
-        `To invite someone to this ${mode} channel, copy this root to your clipboard:`,
+        `To invite people to this ${mode} channel, first share this root:`,
         this.store.channels[mode][id].root
       );
       const root = prompt(`now paste the participant's root:`);
-      this.store.messaging.invite(this.store.current, root);
-    },
+      const participant = this.store.messaging.getChecksum(root);
+      this.store.status = `inviting ${participant} to ${id}...`
+      await this.store.messaging.invite(this.store.current, root);
+      this.store.status = 'OK';
+    } catch (e) { console.error(e) } },
+
     checksum: function(root) {
       return this.store.messaging.getChecksum(root);
     }
