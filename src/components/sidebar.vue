@@ -26,7 +26,10 @@
           <a href=# class="channel"
             v-for="(channel, id) in store.channels[mode]"
             v-on:click="selectChannel(mode, id)">
-            [ {{ id }} ] {{ channel.name }} ({{ channel.loaded ? 'loaded' : 'no' }})
+            [ {{ id }} ] {{ channel.name }}
+            <br>
+            {{ channel.loaded ? 'loaded' : 'click to load' }} |
+            {{ channel.watching.length }} watching
           </a>
 
         <!--
@@ -145,6 +148,7 @@ export default Vue.extend({
 
 #sidebar .channel {
   display: block;
+  margin-bottom: 10px;
 }
 
 #sidebar .mode-header {

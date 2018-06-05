@@ -15,12 +15,18 @@
 
       <div v-for="message in store.channels[store.current.mode][store.current.id].messages">
 
-        <div v-if="message.text">
+        <div v-if="message.type === 'message'">
           - {{ message.text }}
         </div>
 
+        <div v-else-if="message.type === 'join'">
+          - {{ checksum(message.root) }} joined
+        </div>
+
+        <!-- only for data -->
         <div v-else-if="message.type === 'channel'">
-          - saved {{ message.mode }} channel "{{ message.name }}" ({{ message.index || message.address }})
+          - saved {{ message.mode }} channel "{{ message.name }}"
+            ({{ message.index || message.address }})
             {{ message.sidekey ? `and pass "${message.sidekey}"` : '' }}
         </div>
 
@@ -54,6 +60,9 @@ export default Vue.extend({
       );
       const root = prompt(`now paste the participant's root:`);
       this.store.messaging.invite(this.store.current, root);
+    },
+    checksum: function(root) {
+      return this.store.messaging.getChecksum(root);
     }
   }
 });

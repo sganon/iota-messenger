@@ -128,8 +128,11 @@ class Messaging {
       root
     );
     // TODO check address
-    // await this.send({ type: 'join', root }, 0, id);
-    this._initChannel({ mode: channelID.mode, name: channelID.name, root });
+    await this.send({ type: 'join', root }, 0, channelID);
+    await this._initChannel(
+      { mode: channelID.mode, name: channelID.name, root }
+    );
+    this.channels[channelID.mode][channelID.id].watching.push(root);
   } catch(e) { console.error(e) } }
 
   getChecksum(address) {
