@@ -17,7 +17,7 @@
       <div v-for="message in compMessages">
         <div class="message-block" v-if="message && message.type ==='message'">
           <div class="sender">
-            {{message.sender}} <span class="date">@ {{new Date(message.timestamp).toISOString().split('T')[0]}}</span>
+            {{message.sender}} <span class="date"></span>
           </div>
           <div class="message" v-if="message.type === 'message'">
             {{ message.text }}
@@ -53,18 +53,21 @@ export default Vue.extend({
     };
   },
   methods: {
-    invite: async function(mode) { try {
-      const id = this.store.current.id;
-      prompt(
-        `To invite people to this ${mode} channel, first share this root:`,
-        this.store.channels[mode][id].root
-      );
-      const root = prompt(`now paste the participant's root:`);
-      const participant = this.store.messaging.getChecksum(root);
-      this.store.status = `inviting ${participant} to ${id}...`;
-      await this.store.messaging.invite(this.store.current, root);
-      this.store.status = "OK";
-    } catch (e) { console.error(e); }
+    invite: async function(mode) {
+      try {
+        const id = this.store.current.id;
+        prompt(
+          `To invite people to this ${mode} channel, first share this root:`,
+          this.store.channels[mode][id].root
+        );
+        const root = prompt(`now paste the participant's root:`);
+        const participant = this.store.messaging.getChecksum(root);
+        this.store.status = `inviting ${participant} to ${id}...`;
+        await this.store.messaging.invite(this.store.current, root);
+        this.store.status = "OK";
+      } catch (e) {
+        console.error(e);
+      }
     },
 
     checksum: function(root) {
@@ -83,26 +86,29 @@ export default Vue.extend({
         this.store.current.id
       ].messages;
 
-      messages.forEach(message => {
-        message.sender = this.store.current.id;
-      });
-
-      slaves.forEach(slave => {
-        if (!!this.store.channels[this.store.current.mode][slave]) {
-          this.store.channels[this.store.current.mode][slave].messages.forEach(
-            message => {
-              message.sender = slave;
+      if (messages) {
+        messages.forEach(message => {
+          message.sender = this.store.current.id;
+        });
+        if (slaves) {
+          slaves.forEach(slave => {
+            if (!!this.store.channels[this.store.current.mode][slave] &&
+              !!this.store.channels[this.store.current.mode][slave].messages) {
+              this.store.channels[this.store.current.mode][
+                slave
+              ].messages.forEach(message => {
+                message.sender = slave;
+              });
+              messages = messages.concat(
+                this.store.channels[this.store.current.mode][slave].messages
+              );
             }
-          );
-          messages = messages.concat(
-            this.store.channels[this.store.current.mode][slave].messages
-          );
+          });
         }
-      });
-      console.log("COMppppp", messages);
-      messages.sort((a, b) => {
-        return a.timestamp - b.timestamp;
-      });
+        messages.sort((a, b) => {
+          return a.timestamp - b.timestamp;
+        });
+      }
       return messages;
     }
   }
@@ -121,7 +127,7 @@ export default Vue.extend({
 
   .message-block {
     padding-bottom: 1rem;
-    
+
     .sender {
       font-weight: bold;
       .date {
@@ -137,7 +143,7 @@ export default Vue.extend({
 
   .join-message {
     color: #22b1ab;
-    padding-bottom: 1rem;    
+    padding-bottom: 1rem;
   }
 }
 
