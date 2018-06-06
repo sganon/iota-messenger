@@ -14,44 +14,26 @@
     </div>
 
     <div v-if="store.current">
-
-      <div v-for="message in store.channels[store.current.mode][store.current.id].messages">
-
-        <div v-if="message.type === 'message'">
-          - {{ message.text }}
+      <div v-for="message in compMessages">
+        <div class="message-block" v-if="message && message.type ==='message'">
+          <div class="sender">
+            {{message.sender}} <span class="date">@ {{new Date(message.timestamp).toISOString().split('T')[0]}}</span>
+          </div>
+          <div class="message" v-if="message.type === 'message'">
+            {{ message.text }}
+          </div>
         </div>
 
-        <div v-else-if="message.type === 'join'">
-          - {{ checksum(message.root) }} joined
+        <div class="join-message" v-if="message.type === 'join'">
+          {{ checksum(message.root) }} joined
         </div>
 
-        <!-- only for data -->
-        <div v-else-if="message.type === 'channel'">
+        <div class="message-block" v-if="message.type === 'channel'">
           - saved {{ message.mode }} channel "{{ message.name }}"
             ({{ message.index || message.address }})
             {{ message.sidekey ? `and pass "${message.sidekey}"` : '' }}
         </div>
-
-        <div v-else>
-          - {{ JSON.stringify(message) }}
-        </div>
-
       </div>
-
-      <div v-for="participant in store.channels[store.current.mode][store.current.id].watching">
-        <div v-for="message in store.channels[store.current.mode][participant].messages">
-
-          <div v-if="message.type === 'message'">
-            - {{ message.text }}
-          </div>
-
-          <div v-else>
-            - {{ JSON.stringify(message) }}
-          </div>
-
-        </div>
-      </div>
-
     </div>
 
     <div v-else>
@@ -62,12 +44,14 @@
 </template>
 
 <script>
-import Vue from 'vue';
+import Vue from "vue";
 export default Vue.extend({
-  props: ['store'],
-  data: function() { return {
-    messages: [],
-  }},
+  props: ["store"],
+  data: function() {
+    return {
+      messages: []
+    };
+  },
   methods: {
     invite: async function(mode) { try {
       const id = this.store.current.id;
@@ -77,20 +61,55 @@ export default Vue.extend({
       );
       const root = prompt(`now paste the participant's root:`);
       const participant = this.store.messaging.getChecksum(root);
-      this.store.status = `inviting ${participant} to ${id}...`
+      this.store.status = `inviting ${participant} to ${id}...`;
       await this.store.messaging.invite(this.store.current, root);
-      this.store.status = 'OK';
-    } catch (e) { console.error(e) } },
+      this.store.status = "OK";
+    } catch (e) { console.error(e); }
+    },
 
     checksum: function(root) {
       return this.store.messaging.getChecksum(root);
+    }
+  },
+  computed: {
+    compMessages: function() {
+      const master = this.store.channels[this.store.current.mode][
+        this.store.current.id
+      ];
+      const slaves = this.store.channels[this.store.current.mode][
+        this.store.current.id
+      ].watching;
+      let messages = this.store.channels[this.store.current.mode][
+        this.store.current.id
+      ].messages;
+
+      messages.forEach(message => {
+        message.sender = this.store.current.id;
+      });
+
+      slaves.forEach(slave => {
+        if (!!this.store.channels[this.store.current.mode][slave]) {
+          this.store.channels[this.store.current.mode][slave].messages.forEach(
+            message => {
+              message.sender = slave;
+            }
+          );
+          messages = messages.concat(
+            this.store.channels[this.store.current.mode][slave].messages
+          );
+        }
+      });
+      console.log("COMppppp", messages);
+      messages.sort((a, b) => {
+        return a.timestamp - b.timestamp;
+      });
+      return messages;
     }
   }
 });
 </script>
 
 <style lang="scss">
-
 #chat {
   background-color: #c8c8c8;
   position: fixed;
@@ -99,6 +118,27 @@ export default Vue.extend({
   bottom: 70px;
   left: 250px;
   padding: 70px 20px 20px 20px;
+
+  .message-block {
+    padding-bottom: 1rem;
+    
+    .sender {
+      font-weight: bold;
+      .date {
+        font-weight: 300;
+        color: #666;
+      }
+    }
+
+    .message {
+      padding-left: 1rem;
+    }
+  }
+
+  .join-message {
+    color: #22b1ab;
+    padding-bottom: 1rem;    
+  }
 }
 
 #chat-nav {
@@ -109,5 +149,4 @@ export default Vue.extend({
   height: 50px;
   background-color: #666;
 }
-
 </style>

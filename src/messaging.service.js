@@ -62,6 +62,7 @@ class Messaging {
       packet
     );
     console.time('mam-create-message');
+    packet.timestamp = Date.now();
     const data = this.iota.utils.toTrytes(JSON.stringify(packet));
     const message = Mam.create(
       this.channels[channelID.mode][channelID.id].state,
