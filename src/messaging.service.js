@@ -110,7 +110,9 @@ class Messaging {
             id
           };
           this._initChannel(slaveID).then(() => this.loadChannel(slaveID));
-          this.channels[channelID.mode][channelID.id].watching.push(this.getChecksum(message.root));
+          this.channels[channelID.mode][channelID.id].watching.push(
+            this.getChecksum(message.root)
+          );
         }
         return message;
       }
