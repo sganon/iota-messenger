@@ -32,6 +32,11 @@
             <br>
             {{ channel.loaded ? `${channel.watching.length} joined` : 'click to load' }}
 
+            <ul class="participants" v-if="channel.watching.length">
+              <li v-for="particpant in channel.watching">
+                {{particpant}}
+              </li>
+            </ul>
           </a>
 
         <!--
@@ -148,6 +153,7 @@ export default Vue.extend({
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
+  overflow-y: scroll;
 }
 
 #sidebar #channels {
@@ -157,6 +163,11 @@ export default Vue.extend({
 #sidebar .channel {
   display: block;
   margin-bottom: 10px;
+  li {
+    text-decoration: none;
+    color: black;
+    list-style: none;
+  }
 }
 
 #sidebar .mode-header {
