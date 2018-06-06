@@ -17,7 +17,7 @@
       <div v-for="message in compMessages">
         <div class="message-block" v-if="message && message.type ==='message'">
           <div class="sender">
-            {{message.sender}} <span class="date">@ {{new Date(message.timestamp).toISOString().split('T')[0]}}</span>
+            {{message.sender}} <span class="date"></span>
           </div>
           <div class="message" v-if="message.type === 'message'">
             {{ message.text }}
@@ -92,7 +92,8 @@ export default Vue.extend({
         });
         if (slaves) {
           slaves.forEach(slave => {
-            if (!!this.store.channels[this.store.current.mode][slave]) {
+            if (!!this.store.channels[this.store.current.mode][slave] &&
+              !!this.store.channels[this.store.current.mode][slave].messages) {
               this.store.channels[this.store.current.mode][
                 slave
               ].messages.forEach(message => {
