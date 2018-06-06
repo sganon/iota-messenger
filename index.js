@@ -76,9 +76,10 @@ const app = new Vue({
 
       const messaging = new Messaging(this.iota, seed, this.$set);
       this.store.messaging = messaging;
-      this.store.channels = messaging.channels;
+      this.store.channels  = messaging.channels;
+      this.store.slaves    = messaging.slaves;
 
-      this.store.status   = "opening messaging account...";
+      this.store.status = "opening messaging account...";
       await messaging.init();
 
       this.store.status = "OK";
